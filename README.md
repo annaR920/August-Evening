@@ -6,3 +6,5 @@ Track budgets per category and see progress
 Print (browser print styles)
 Export as JSON/CSV (download file)
 (Optional) POST to a tiny Python backend to get a CSV response (no DB)
+
+Collaborator: Mindi Briese
