@@ -8,5 +8,6 @@ Export as JSON/CSV (download file)
 (Optional) POST to a tiny Python backend to get a CSV response (no DB)
 
 Collaborator: Mindi Briese
+Collaborator: John Schlautman
 Contributor: Anna Rankin
 Contributor: Glenn Byers
