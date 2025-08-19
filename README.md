@@ -9,6 +9,7 @@ Export as JSON/CSV (download file)
 
 Collaborator: Mindi Briese
 Contributor: Anna Rankin
+Contributor: Eddy Nelson Rivera
 Contributor: Kai Pannu
 Contributor: Glenn Byers
 Contributer: Michelle Evans
