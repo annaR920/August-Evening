@@ -38,7 +38,7 @@ function App() {
   const totalIncome = incomes.reduce((sum, inc) => sum + inc.amount, 0);
 
   return (
-    <>
+    <div className="main-container">
       <Header />
       <MonthlyOverviewBar />
       <div style={{ padding: 16 }}>
@@ -52,7 +52,7 @@ function App() {
       <FixedExpenses />
       <DiscretionaryExpense />
       <SavingGoals />
-    </>
+    </div>
   );
 }
 
