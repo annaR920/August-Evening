@@ -9,7 +9,7 @@ import Income from "./components/Income";
 
 function App() {
   return (
-    <>
+    <div className="main-container">
       <Header />
       <MonthlyOverviewBar />
       <SpendingCategoriePie />
@@ -17,7 +17,7 @@ function App() {
       <FixedExpenses />
       <DiscretionaryExpense />
       <SavingGoals />
-    </>
+    </div>
   );
 }
 
