@@ -27,4 +27,4 @@ export const LocalStorage = {
   clearIncome(): void {
     localStorage.removeItem(INCOME_KEY);
   },
-};
+}; 
