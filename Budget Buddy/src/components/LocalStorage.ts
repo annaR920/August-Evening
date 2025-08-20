@@ -7,7 +7,9 @@ export interface IncomeSource {
   date: string;
 }
 
+
 const INCOME_KEY = "budgetBuddyIncome";
+const DATE_KEY = "budgetBuddySelectedDate";
 
 export const LocalStorage = {
   getIncome(): IncomeSource[] {
@@ -26,5 +28,17 @@ export const LocalStorage = {
 
   clearIncome(): void {
     localStorage.removeItem(INCOME_KEY);
+  },
+  // DatePicker support
+  setSelectedDate(date: string): void {
+    localStorage.setItem(DATE_KEY, date);
+  },
+
+  getSelectedDate(): string | null {
+    return localStorage.getItem(DATE_KEY);
+  },
+
+  clearSelectedDate(): void {
+    localStorage.removeItem(DATE_KEY);
   },
 }; 
