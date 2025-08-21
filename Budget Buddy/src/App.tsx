@@ -1,11 +1,13 @@
 import "./App.css";
+import { } from "react";
 import Header from "./components/Header";
 import MonthlyOverviewBar from "./components/MonthlyOverviewBar";
 import SpendingByCategoryPie from "./components/SpendingByCategoryPie";
 import SavingGoal from "./components/SavingsGoal";
-import DiscretionaryExpense from "./components/DiscretionaryExpense";
+import DiscretionaryExpenses from "./components/DiscretionaryExpense";
 import FixedExpenses from "./components/FixedExpenses";
 import Income from "./components/Income";
+// Transactions view removed from main toggle per user request
 import type { Expense, ExpenseCategory, Income as IncomeType, CategoryTotal } from "./types";
 
 function App() {
@@ -49,9 +51,22 @@ function App() {
         />
       </div>
       <Income />
-      <FixedExpenses />
-      <DiscretionaryExpense />
-      <SavingGoal />
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: '1fr', 
+        gap: '20px', 
+        padding: '16px',
+        maxWidth: '1400px',
+        margin: '0 auto'
+      }}>
+        <FixedExpenses />
+        <DiscretionaryExpenses />
+      </div>
+      <SavingGoal 
+        name="Emergency Fund"
+        target={10000}
+        current={2500}
+      />
     </div>
   );
 }

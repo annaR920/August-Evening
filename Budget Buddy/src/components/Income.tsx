@@ -45,7 +45,23 @@ const Income: React.FC = () => {
 
   return (
     <div style={{ maxWidth: 500, margin: "0 auto" }}>
-      <h2>Monthly Income</h2>
+      <h2 style={{
+        textAlign: 'center',
+        marginBottom: '24px',
+        padding: '15px 20px',
+        backgroundColor: '#F9FAFB',
+        borderRadius: '12px',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+        fontSize: '24px',
+        fontWeight: 700,
+        color: '#1F2937',
+        textTransform: 'uppercase',
+        letterSpacing: '0.05em',
+        border: '2px solid #10B981',
+        borderBottom: '4px solid #10B981'
+      }}>
+        Source Income
+      </h2>
       {/* Labels Row */}
       <div style={{ display: "flex", alignItems: "center", marginBottom: 4 }}>
         <label style={{ flex: 2, marginRight: 8, textAlign: "left" }}>Account</label>

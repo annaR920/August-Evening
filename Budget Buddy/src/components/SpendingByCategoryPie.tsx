@@ -83,15 +83,35 @@ const SpendingByCategoryPie: React.FC<SpendingByCategoryPieProps> = ({
           y="50%"
           textAnchor="middle"
           dominantBaseline="middle"
-          fontSize={14}
-          fill="#111827"
+          fontSize={18}
+          fontWeight="bold"
+          fill="#FFFFFF"
+          style={{
+            textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
+            filter: 'drop-shadow(0 0 2px rgba(0,0,0,0.5))'
+          }}
         >
           {total > 0 ? `$${total.toFixed(0)}` : "No Data"}
         </text>
       </svg>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {title ? (
-          <div style={{ fontWeight: 600, marginBottom: 4 }}>{title}</div>
+          <div style={{ 
+            fontWeight: 700, 
+            marginBottom: 12, 
+            fontSize: '18px',
+            color: '#1F2937',
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+            padding: '8px 16px',
+            backgroundColor: '#F3F4F6',
+            borderRadius: '8px',
+            border: '2px solid #E5E7EB',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+            textAlign: 'center'
+          }}>
+            {title}
+          </div>
         ) : null}
         {data.map((item, index) => {
           const denominator = typeof denominatorTotal === "number" && denominatorTotal > 0 ? denominatorTotal : total;

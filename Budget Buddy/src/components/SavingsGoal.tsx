@@ -21,9 +21,44 @@ const SavingsGoal: React.FC<SavingsGoalProps> = ({ name, target, current, onDate
     };
 
     return (
-        <div className="savings-goal" style={{ border: '1px solid #ccc', borderRadius: 8, padding: 16, maxWidth: 400 }}>
-            <h2>Saving Goals</h2>
-            <h3>{name}</h3>
+        <div className="savings-goal" style={{ 
+            border: '2px solid #8B5CF6', 
+            borderRadius: 16, 
+            padding: 24, 
+            maxWidth: 400,
+            backgroundColor: '#F9FAFB',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+        }}>
+            <h2 style={{
+                textAlign: 'center',
+                marginBottom: '16px',
+                padding: '12px 16px',
+                backgroundColor: '#F3F4F6',
+                borderRadius: '8px',
+                fontSize: '20px',
+                fontWeight: 700,
+                color: '#1F2937',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+                border: '2px solid #8B5CF6',
+                margin: '0 0 16px 0'
+            }}>
+                Saving Goals
+            </h2>
+            <h3 style={{
+                textAlign: 'center',
+                marginBottom: '16px',
+                padding: '8px 12px',
+                backgroundColor: '#8B5CF6',
+                borderRadius: '6px',
+                fontSize: '18px',
+                fontWeight: 600,
+                color: '#FFFFFF',
+                textTransform: 'capitalize',
+                letterSpacing: '0.02em'
+            }}>
+                {name}
+            </h3>
             <div style={{ marginBottom: 8 }}>
                 Target: ${typeof target === 'number' ? target.toLocaleString() : '0'}<br />
                 Current: ${typeof current === 'number' ? current.toLocaleString() : '0'}
