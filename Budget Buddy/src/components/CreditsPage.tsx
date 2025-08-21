@@ -1,54 +1,54 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
-import { Button } from "@/components/ui/button"
-import { ExternalLink, Github } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import { ExternalLink, Github } from "lucide-react";
 
 type Developer = {
-  name: string
-  role?: string
-  link?: string
-  linkType?: 'github' | 'twitter' | 'website'
-}
+  name: string;
+  role?: string;
+  link?: string;
+  linkType?: "github" | "twitter" | "website";
+};
 
 const developers: Developer[] = [
-  { 
-    name: "Dorian Germain Zambo Zambo", 
-    role: "Backend Engineer", 
+  {
+    name: "Dorian Germain Zambo Zambo",
+    role: "Backend Engineer",
     link: "https://github.com/nariod14",
-    linkType: 'github'
+    linkType: "github",
   },
-  { 
-    name: "Teammate One", 
-    role: "Backend Engineer" 
+  {
+    name: "Teammate One",
+    role: "Backend Engineer",
   },
-  { 
-    name: "Teammate Two", 
-    role: "UI/UX Designer", 
+  {
+    name: "Teammate Two",
+    role: "UI/UX Designer",
     link: "https://twitter.com/someone",
-    linkType: 'twitter'
+    linkType: "twitter",
   },
-]
+];
 
 export default function CreditsPage() {
   const getLinkIcon = (linkType?: string) => {
     switch (linkType) {
-      case 'github':
-        return <Github className="w-4 h-4" />
+      case "github":
+        return <Github className="w-4 h-4" />;
       default:
-        return <ExternalLink className="w-4 h-4" />
+        return <ExternalLink className="w-4 h-4" />;
     }
-  }
+  };
 
   const getLinkText = (linkType?: string) => {
     switch (linkType) {
-      case 'github':
-        return 'GitHub'
-      case 'twitter':
-        return 'Twitter'
+      case "github":
+        return "GitHub";
+      case "twitter":
+        return "Twitter";
       default:
-        return 'Visit'
+        return "Visit";
     }
-  }
+  };
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-600 via-slate-700 to-slate-600 text-white p-6">
@@ -66,7 +66,7 @@ export default function CreditsPage() {
         {/* Main Content Card */}
         <Card className="bg-black/40 backdrop-blur-lg border border-slate-600/50 shadow-2xl relative">
           {/* Back Button */}
-          <div style={{ position: 'absolute', top: 16, left: 16, zIndex: 10 }}>
+          <div style={{ position: "absolute", top: 16, left: 16, zIndex: 10 }}>
             <Button
               variant="outline"
               size="default"
@@ -116,11 +116,11 @@ export default function CreditsPage() {
                           variant="outline"
                           size="default"
                           asChild
-                          className="bg-slate-900/60 border-cyan-500/50 text-cyan-300 hover:bg-gray-100 hover:border-cyan-400 bg-gray-300 hover:text-cyan-200 transition-all duration-200 font-medium shadow-md hover:shadow-lg flex-shrink-0"
+                          className="bg-slate-900/60 border-cyan-500/50 text-cyan-300 hover:bg-gray-100 hover:border-cyan-400 hover:text-cyan-200 transition-all duration-200 font-medium shadow-md hover:shadow-lg flex-shrink-0"
                         >
-                          <a 
-                            href={dev.link} 
-                            target="_blank" 
+                          <a
+                            href={dev.link}
+                            target="_blank"
                             rel="noopener noreferrer"
                             className="flex items-center gap-2 px-4 py-2"
                           >
@@ -137,7 +137,7 @@ export default function CreditsPage() {
                       )}
                     </div>
                   </div>
-                  
+
                   {/* Subtle gradient overlay */}
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-cyan-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
                 </div>
@@ -164,5 +164,5 @@ export default function CreditsPage() {
         </Card>
       </div>
     </div>
-  )
+  );
 }
