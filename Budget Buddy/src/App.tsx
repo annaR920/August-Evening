@@ -7,6 +7,7 @@ import DiscretionaryExpense from "./components/DiscretionaryExpense";
 import FixedExpenses from "./components/FixedExpenses";
 import Income from "./components/Income";
 import type { Expense, ExpenseCategory, Income as IncomeType, CategoryTotal } from "./types";
+import { MonthlySummary } from "./components/MonthlySummary"; // <-- Import MonthlySummary
 
 function App() {
   // Example data — replace with real state or API data later
@@ -40,6 +41,8 @@ function App() {
   return (
     <div className="main-container">
       <Header />
+      {/* Monthly summary at the top */}
+      <MonthlySummary incomes={incomes} expenses={expenses} />
       <MonthlyOverviewBar />
       <div style={{ padding: 16 }}>
         <SpendingByCategoryPie
@@ -54,6 +57,6 @@ function App() {
       <SavingGoal />
     </div>
   );
-}
+  }
 
 export default App;
