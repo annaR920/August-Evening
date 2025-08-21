@@ -1,4 +1,5 @@
 import "./App.css";
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import Header from "./components/Header";
 import MonthlyOverviewBar from "./components/MonthlyOverviewBar";
 import SpendingByCategoryPie from "./components/SpendingByCategoryPie";
@@ -6,10 +7,17 @@ import SavingGoals from "./components/SavingGoals";
 import DiscretionaryExpense from "./components/DiscretionaryExpense";
 import FixedExpenses from "./components/FixedExpenses";
 import Income from "./components/Income";
-import type { Expense, ExpenseCategory, Income as IncomeType, CategoryTotal } from "./types";
-import { MonthlySummary } from "./components/MonthlySummary"; // <-- Import MonthlySummary
+import type {
+  Expense,
+  ExpenseCategory,
+  Income as IncomeType,
+  CategoryTotal,
+} from "./types";
 
-function App() {
+import CreditsPage from "./components/CreditsPage";
+
+// Dashboard component with all the budget functionality
+function Dashboard() {
   // Example data — replace with real state or API data later
   const incomes: IncomeType[] = [
     { id: "inc-1", source: "Salary", amount: 4200, date: "2025-08-01" },
@@ -19,7 +27,12 @@ function App() {
   const expenses: Expense[] = [
     { id: "exp-1", category: "Housing", amount: 1500, date: "2025-08-03" },
     { id: "exp-2", category: "Food", amount: 420, date: "2025-08-10" },
-    { id: "exp-3", category: "Transportation", amount: 160, date: "2025-08-08" },
+    {
+      id: "exp-3",
+      category: "Transportation",
+      amount: 160,
+      date: "2025-08-08",
+    },
     { id: "exp-4", category: "Utilities", amount: 220, date: "2025-08-05" },
     { id: "exp-5", category: "Entertainment", amount: 140, date: "2025-08-12" },
     { id: "exp-6", category: "Healthcare", amount: 75, date: "2025-08-18" },
@@ -30,9 +43,15 @@ function App() {
     const categoryToTotal = new Map<ExpenseCategory, number>();
     for (const item of items) {
       const existing = categoryToTotal.get(item.category) ?? 0;
-      categoryToTotal.set(item.category as ExpenseCategory, existing + item.amount);
+      categoryToTotal.set(
+        item.category as ExpenseCategory,
+        existing + item.amount
+      );
     }
-    return Array.from(categoryToTotal.entries()).map(([category, amount]) => ({ category, amount }));
+    return Array.from(categoryToTotal.entries()).map(([category, amount]) => ({
+      category,
+      amount,
+    }));
   }
 
   const totalsByCategory = aggregateByCategory(expenses);
@@ -41,6 +60,17 @@ function App() {
   return (
     <div className="main-container">
       <Header />
+      <div
+        style={{ padding: "20px", textAlign: "center", marginBottom: "20px" }}
+      >
+        <Link
+          to="/credits"
+          style={{ color: "#00bcd4", textDecoration: "underline" }}
+        >
+          View Credits Page
+        </Link>
+      </div>
+
       <MonthlyOverviewBar
         monthlyExpenseTotal={expenses.reduce((sum, exp) => sum + exp.amount, 0)}
         monthlyIncomeTotal={incomes.reduce((sum, inc) => sum + inc.amount, 0)}
@@ -56,9 +86,19 @@ function App() {
       <FixedExpenses />
       <DiscretionaryExpense />
       <SavingGoals />
-
     </div>
   );
-  }
+}
+
+function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/credits" element={<CreditsPage />} />
+      </Routes>
+    </Router>
+  );
+}
 
 export default App;
