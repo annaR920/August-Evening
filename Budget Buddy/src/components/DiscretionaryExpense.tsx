@@ -4,8 +4,30 @@ import { LocalStorage } from './LocalStorage';
 import { useLocalStorageList } from './expenses/useLocalStorageList';
 
 const DiscretionaryExpenses: React.FC = () => {
-  const [categories, setCategories] = useLocalStorageList('bb_categories', []);
-  const [accounts, setAccounts] = useLocalStorageList('bb_accounts', ["Checking", "Savings", "Credit Card"]);
+  const [categories, setCategories] = useLocalStorageList('bb_categories', [
+    "Housing",
+    "Utilities", 
+    "Transportation",
+    "Food & Dining",
+    "Healthcare",
+    "Insurance",
+    "Debt Payments",
+    "Entertainment",
+    "Shopping",
+    "Education",
+    "Gifts & Donations",
+    "Personal Care",
+    "Subscriptions",
+    "Other"
+  ]);
+  const [accounts, setAccounts] = useLocalStorageList('bb_accounts', [
+    "Checking", 
+    "Savings", 
+    "Credit Card",
+    "Investment Account",
+    "Emergency Fund",
+    "Business Account"
+  ]);
 
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [newCategory, setNewCategory] = useState('');
@@ -59,25 +81,58 @@ const DiscretionaryExpenses: React.FC = () => {
     }));
   }, [selectedBalanceAccount, accountBalances]);
 
-  const [rows, setRows] = useState<Transaction[]>([{
-    id: 'dx-1',
-    date: new Date().toISOString().split('T')[0],
-    account: 'Checking',
-    category: categories[0] ?? '',
-    payee: '',
-    amount: 0,
-  }]);
+  const [rows, setRows] = useState<Transaction[]>([]);
 
-  // load persisted rows
+  // Initialize rows when categories and accounts are available, and load from localStorage
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem('bb_tx_discretionary');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed)) setRows(parsed);
+    if (categories.length > 0 && accounts.length > 0) {
+      try {
+        const stored = localStorage.getItem('bb_tx_discretionary');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            // Ensure each row has a valid date and account
+            const rowsWithDates = parsed.map(row => ({
+              ...row,
+              date: row.date || new Date().toISOString().split('T')[0],
+              account: row.account || accounts[0] || 'Checking'
+            }));
+            setRows(rowsWithDates);
+          } else {
+            // No stored rows, create initial row
+            setRows([{
+              id: 'dx-1',
+              date: new Date().toISOString().split('T')[0],
+              account: accounts[0] || 'Checking', // Use first available account
+              category: categories[0], // Use first category
+              payee: '',
+              amount: 0,
+            }]);
+          }
+        } else {
+          // No stored data, create initial row
+          setRows([{
+            id: 'dx-1',
+            date: new Date().toISOString().split('T')[0],
+            account: accounts[0] || 'Checking', // Use first available account
+            category: categories[0], // Use first category
+            payee: '',
+            amount: 0,
+          }]);
+        }
+      } catch {
+        // Error loading from localStorage, create initial row
+        setRows([{
+          id: 'dx-1',
+          date: new Date().toISOString().split('T')[0],
+          account: accounts[0] || 'Checking', // Use first available account
+          category: categories[0], // Use first category
+          payee: '',
+          amount: 0,
+        }]);
       }
-    } catch {}
-  }, []);
+    }
+  }, [categories, accounts]);
 
   // persist rows and notify listeners
   useEffect(() => {
@@ -162,8 +217,8 @@ const DiscretionaryExpenses: React.FC = () => {
     setRows(prev => ([...prev, {
       id: `dx-${Date.now()}`,
       date: new Date().toISOString().split('T')[0],
-      account: (accounts.includes('Checking') ? 'Checking' : (accounts[0] ?? 'Checking')),
-      category: categories[0] ?? '',
+      account: accounts[0] || 'Checking', // Use first available account
+      category: categories[0] || 'Housing', // Use first category or fallback to Housing
       payee: '',
       amount: 0,
     }]));
@@ -173,7 +228,7 @@ const DiscretionaryExpenses: React.FC = () => {
     setRows(prev => prev.length > 1 ? prev.filter(r => r.id !== id) : prev);
   };
 
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true);
 
   return (
     <div>
@@ -181,7 +236,7 @@ const DiscretionaryExpenses: React.FC = () => {
         <h2 style={{ margin: 0 }}>Discretionary Expenses</h2>
         <button
           onClick={() => setIsExpanded(v => !v)}
-          style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #e5e7eb', background: '#fff' }}
+          style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #e5e7eb', background: '#fff', color: '#1f2937', fontWeight: '500' }}
         >
           {isExpanded ? 'Hide' : 'Show'} Transactions
         </button>
@@ -232,7 +287,7 @@ const DiscretionaryExpenses: React.FC = () => {
               <span style={{ fontWeight: 600 }}>New category:</span>
               <input type="text" value={newCategory} onChange={(e) => setNewCategory(e.target.value)} placeholder="Category name" style={{ padding: '6px 10px', border: '1px solid #ced4da', borderRadius: 6 }} onKeyDown={(e) => { if (e.key === 'Enter') addNewCategory(); if (e.key === 'Escape') setShowAddCategory(false); }} />
               <button onClick={addNewCategory} style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #e5e7eb', background: '#0ea5e9', color: '#fff' }}>Add</button>
-              <button onClick={() => { setShowAddCategory(false); setPendingRowForCategory(null); }} style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #e5e7eb' }}>Cancel</button>
+              <button onClick={() => { setShowAddCategory(false); setPendingRowForCategory(null); }} style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #e5e7eb', background: '#fff', color: '#1f2937' }}>Cancel</button>
               <button onClick={() => removeCategory(newCategory.trim())} disabled={!newCategory.trim() || rows.some(r => r.category === newCategory.trim()) || categories.length <= 1} style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #e5e7eb', background: '#dc2626', color: '#fff' }}>Remove</button>
             </div>
           )}
@@ -241,7 +296,7 @@ const DiscretionaryExpenses: React.FC = () => {
               <span style={{ fontWeight: 600 }}>New account:</span>
               <input type="text" value={newAccount} onChange={(e) => setNewAccount(e.target.value)} placeholder="Account name" style={{ padding: '6px 10px', border: '1px solid #ced4da', borderRadius: 6 }} onKeyDown={(e) => { if (e.key === 'Enter') addNewAccount(); if (e.key === 'Escape') setShowAddAccount(false); }} />
               <button onClick={addNewAccount} style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #e5e7eb', background: '#0ea5e9', color: '#fff' }}>Add</button>
-              <button onClick={() => { setShowAddAccount(false); setPendingRowForAccount(null); }} style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #e5e7eb' }}>Cancel</button>
+              <button onClick={() => { setShowAddAccount(false); setPendingRowForAccount(null); }} style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #e5e7eb', background: '#fff', color: '#1f2937' }}>Cancel</button>
               <button onClick={() => removeAccount(newAccount.trim())} disabled={!newAccount.trim() || rows.some(r => r.account === newAccount.trim()) || accounts.length <= 1} style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #e5e7eb', background: '#dc2626', color: '#fff' }}>Remove</button>
             </div>
           )}

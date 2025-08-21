@@ -58,21 +58,36 @@ const TransactionRow: React.FC<Props> = ({
     >
       <input
         type="date"
-        value={value.date}
-        onChange={(e) => onChange(value.id, { date: e.target.value })}
-        style={inputStyle}
+        value={value.date || new Date().toISOString().split('T')[0]}
+        onChange={(e) => {
+          const newDate = e.target.value;
+          if (newDate) {
+            onChange(value.id, { date: newDate });
+          }
+        }}
+        style={{
+          ...inputStyle,
+          color: '#000000',
+          backgroundColor: '#ffffff'
+        }}
+        min="1900-01-01"
+        max="2100-12-31"
       />
 
       <select
-        value={value.account || ''}
+        value={value.account || accounts[0] || ''}
         onChange={(e) => {
           const v = e.target.value;
           if (v === NEW_ACCOUNT_OPTION) return onNewAccountRequested(value.id);
           onChange(value.id, { account: v });
         }}
-        style={inputStyle}
+        style={{
+          ...inputStyle,
+          color: '#000000',
+          backgroundColor: '#ffffff'
+        }}
       >
-        <option value="" disabled>{accounts.length === 0 ? 'No accounts — add new…' : 'Select account'}</option>
+        <option value="">{accounts.length === 0 ? 'No accounts — add new…' : 'Select account'}</option>
         {accounts.map((a) => (
           <option key={a} value={a}>
             {a}
@@ -82,13 +97,17 @@ const TransactionRow: React.FC<Props> = ({
       </select>
 
       <select
-        value={value.category}
+        value={value.category || categories[0] || ''}
         onChange={(e) => {
           const v = e.target.value;
           if (v === NEW_CATEGORY_OPTION) return onNewCategoryRequested(value.id);
           onChange(value.id, { category: v });
         }}
-        style={inputStyle}
+        style={{
+          ...inputStyle,
+          color: '#000000',
+          backgroundColor: '#ffffff'
+        }}
       >
         <option value="">Select category</option>
         {categories.map((c) => (
@@ -106,7 +125,11 @@ const TransactionRow: React.FC<Props> = ({
           value={value.payee}
           onChange={(e) => onChange(value.id, { payee: e.target.value })}
           list={`payees-${value.id}`}
-          style={inputStyle}
+          style={{
+            ...inputStyle,
+            color: '#000000',
+            backgroundColor: '#ffffff'
+          }}
         />
         <datalist id={`payees-${value.id}`}>
           {payeeSuggestions.map((p) => (
@@ -118,7 +141,7 @@ const TransactionRow: React.FC<Props> = ({
       <input
         type="number"
         placeholder="0.00"
-        value={value.amount || ""}
+        value={value.amount === 0 ? "" : value.amount || ""}
         onChange={(e) => onChange(value.id, { amount: parseFloat(e.target.value) || 0 })}
         style={inputStyle}
       />

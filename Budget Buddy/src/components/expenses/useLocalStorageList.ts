@@ -8,7 +8,7 @@ export function useLocalStorageList(key: string, initial: string[]) {
       const stored = localStorage.getItem(key);
       if (stored) {
         const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) {
+        if (Array.isArray(parsed)) {
           setList(parsed);
         }
       }

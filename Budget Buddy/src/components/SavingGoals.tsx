@@ -1,6 +1,6 @@
 
 
-import React, { useState, useEffect } from "react";
+import { useState } from "react";
 import DatePicker from "./DatePicker";
 
 interface Goal {
@@ -23,19 +23,7 @@ const SavingGoals = () => {
     ));
   };
 
-  // Points calculation handler
-  const handlePointsCalculation = (index: number, p4: string, p5: string, p6: string) => {
-    const n4 = Number(p4), n5 = Number(p5), n6 = Number(p6);
-    if (!isNaN(n4) && !isNaN(n5) && !isNaN(n6)) {
-      setGoals(goals => goals.map((goal, i) =>
-        i === index ? {
-          ...goal,
-          current: n4 - (n5 + n6),
-          pointsCalculation: `${n4} - (${n5} + ${n6})`
-        } : goal
-      ));
-    }
-  };
+
 
   const addGoal = (index: number) => {
     setGoals(goals => [
