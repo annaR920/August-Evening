@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import TransactionRow, { type Transaction } from './transactions/TransactionRow';
+import { LocalStorage } from './LocalStorage';
 import { useLocalStorageList } from './expenses/useLocalStorageList';
 
 const DiscretionaryExpenses: React.FC = () => {
@@ -17,6 +18,7 @@ const DiscretionaryExpenses: React.FC = () => {
   // Per-account starting balances (shared key across app)
   const [accountBalances, setAccountBalances] = useState<Record<string, number>>({});
   const [selectedBalanceAccount, setSelectedBalanceAccount] = useState<string>('Checking');
+  const [balanceInput, setBalanceInput] = useState<Record<string, string>>({});
 
   useEffect(() => {
     try {
@@ -38,6 +40,25 @@ const DiscretionaryExpenses: React.FC = () => {
     }
   }, [accounts, selectedBalanceAccount]);
 
+  useEffect(() => {
+    const onIncome = () => {
+      try {
+        const incomes = (LocalStorage.getIncome?.() || []) as Array<{ amount: number; name?: string; date?: string }>;
+        const totalIncome = incomes.reduce((s, i) => s + (Number(i.amount) || 0), 0);
+        setAccountBalances(prev => ({ ...prev, Checking: Number(prev.Checking ?? 0) + totalIncome }));
+      } catch {}
+    };
+    window.addEventListener('bb:income-updated', onIncome);
+    return () => window.removeEventListener('bb:income-updated', onIncome);
+  }, []);
+
+  useEffect(() => {
+    setBalanceInput(prev => ({
+      ...prev,
+      [selectedBalanceAccount]: prev[selectedBalanceAccount] ?? String(accountBalances[selectedBalanceAccount] ?? ''),
+    }));
+  }, [selectedBalanceAccount, accountBalances]);
+
   const [rows, setRows] = useState<Transaction[]>([{
     id: 'dx-1',
     date: new Date().toISOString().split('T')[0],
@@ -58,9 +79,10 @@ const DiscretionaryExpenses: React.FC = () => {
     } catch {}
   }, []);
 
-  // persist rows
+  // persist rows and notify listeners
   useEffect(() => {
     try { localStorage.setItem('bb_tx_discretionary', JSON.stringify(rows)); } catch {}
+    try { window.dispatchEvent(new Event('bb:transactions-updated')); } catch {}
   }, [rows]);
 
   const payeeSuggestions = useMemo(() => {
@@ -151,9 +173,19 @@ const DiscretionaryExpenses: React.FC = () => {
     setRows(prev => prev.length > 1 ? prev.filter(r => r.id !== id) : prev);
   };
 
+  const [isExpanded, setIsExpanded] = useState(false);
+
   return (
     <div>
-      <h2>Discretionary Expenses</h2>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+        <h2 style={{ margin: 0 }}>Discretionary Expenses</h2>
+        <button
+          onClick={() => setIsExpanded(v => !v)}
+          style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #e5e7eb', background: '#fff' }}
+        >
+          {isExpanded ? 'Hide' : 'Show'} Transactions
+        </button>
+      </div>
 
       {/* Account balance editor */}
       {accounts.length > 0 && (
@@ -169,15 +201,31 @@ const DiscretionaryExpenses: React.FC = () => {
             ))}
           </select>
           <input
-            type="number"
-            value={Number(accountBalances[selectedBalanceAccount] ?? 0)}
-            onChange={(e) => setAccountBalances(prev => ({ ...prev, [selectedBalanceAccount]: parseFloat(e.target.value) || 0 }))}
+            type="text"
+            value={balanceInput[selectedBalanceAccount] ?? ''}
+            onChange={(e) => {
+              const raw = e.target.value;
+              const valid = /^-?\d*(\.\d*)?$/.test(raw);
+              if (!valid && raw !== '') return;
+              let cleaned = raw;
+              cleaned = cleaned.replace(/^(\d)(?=\d)/, '$1');
+              if (/^-?0+\d/.test(cleaned)) {
+                cleaned = cleaned.replace(/^(-?)0+(?=\d)/, '$1');
+              }
+              setBalanceInput(prev => ({ ...prev, [selectedBalanceAccount]: cleaned }));
+            }}
+            onBlur={() => {
+              const raw = balanceInput[selectedBalanceAccount] ?? '';
+              const num = raw === '' || raw === '-' || raw === '.' || raw === '-.' ? 0 : parseFloat(raw);
+              setAccountBalances(prev => ({ ...prev, [selectedBalanceAccount]: isNaN(num) ? 0 : num }));
+              setBalanceInput(prev => ({ ...prev, [selectedBalanceAccount]: String(isNaN(num) ? 0 : num) }));
+            }}
             style={{ padding: '6px 10px', border: '1px solid #ced4da', borderRadius: 6, width: 140 }}
           />
         </div>
       )}
 
-      {(showAddCategory || showAddAccount) && (
+      {(showAddCategory || showAddAccount) && isExpanded && (
         <div style={{ display: 'flex', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
           {showAddCategory && (
             <div style={{ display: 'flex', gap: 8, alignItems: 'center', border: '1px solid #e5e7eb', borderRadius: 8, padding: 8 }}>
@@ -200,23 +248,25 @@ const DiscretionaryExpenses: React.FC = () => {
         </div>
       )}
 
-      <div style={{ display: 'grid', gap: 8 }}>
-        {rows.map((row, idx) => (
-          <TransactionRow
-            key={row.id}
-            value={row}
-            categories={categories}
-            accounts={accounts}
-            payeeSuggestions={payeeSuggestions}
-            onChange={handleChange}
-            onAdd={handleAdd}
-            onRemove={handleRemove}
-            onNewCategoryRequested={(id) => { setPendingRowForCategory(id); setShowAddCategory(true); }}
-            onNewAccountRequested={(id) => { setPendingRowForAccount(id); setShowAddAccount(true); }}
-            lineBalance={runningBalances[idx] ?? 0}
-          />
-        ))}
-      </div>
+      {isExpanded && (
+        <div style={{ display: 'grid', gap: 8 }}>
+          {rows.map((row, idx) => (
+            <TransactionRow
+              key={row.id}
+              value={row}
+              categories={categories}
+              accounts={accounts}
+              payeeSuggestions={payeeSuggestions}
+              onChange={handleChange}
+              onAdd={handleAdd}
+              onRemove={handleRemove}
+              onNewCategoryRequested={(id) => { setPendingRowForCategory(id); setShowAddCategory(true); }}
+              onNewAccountRequested={(id) => { setPendingRowForAccount(id); setShowAddAccount(true); }}
+              lineBalance={runningBalances[idx] ?? 0}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 };

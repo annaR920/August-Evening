@@ -15,9 +15,10 @@ const Income: React.FC = () => {
     setIncomes(LocalStorage.getIncome());
   }, []);
 
-  // Save to LocalStorage on change
+  // Save to LocalStorage on change and notify listeners
   useEffect(() => {
     LocalStorage.setIncome(incomes);
+    try { window.dispatchEvent(new Event('bb:income-updated')); } catch {}
   }, [incomes]);
 
   const handleChange = (index: number, field: keyof IncomeSource, value: string) => {
