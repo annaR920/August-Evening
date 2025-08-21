@@ -2,7 +2,7 @@ import "./App.css";
 import Header from "./components/Header";
 import MonthlyOverviewBar from "./components/MonthlyOverviewBar";
 import SpendingByCategoryPie from "./components/SpendingByCategoryPie";
-import SavingGoal from "./components/SavingsGoal";
+import SavingGoals from "./components/SavingGoals";
 import DiscretionaryExpense from "./components/DiscretionaryExpense";
 import FixedExpenses from "./components/FixedExpenses";
 import Income from "./components/Income";
@@ -54,7 +54,10 @@ function App() {
       <Income />
       <FixedExpenses />
       <DiscretionaryExpense />
-      <SavingGoal />
+      <SavingGoals 
+        name={""} 
+        target={0} 
+        current={0} />
     </div>
   );
   }
