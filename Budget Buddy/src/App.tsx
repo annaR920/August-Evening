@@ -41,9 +41,10 @@ function App() {
   return (
     <div className="main-container">
       <Header />
-      {/* Monthly summary at the top */}
-      <MonthlySummary incomes={incomes} expenses={expenses} />
-      <MonthlyOverviewBar />
+      <MonthlyOverviewBar
+        monthlyExpenseTotal={expenses.reduce((sum, exp) => sum + exp.amount, 0)}
+        monthlyIncomeTotal={incomes.reduce((sum, inc) => sum + inc.amount, 0)}
+      />
       <div style={{ padding: 16 }}>
         <SpendingByCategoryPie
           data={totalsByCategory}
@@ -55,9 +56,13 @@ function App() {
       <FixedExpenses />
       <DiscretionaryExpense />
       <SavingGoals 
-        name={""} 
-        target={0} 
-        current={0} />
+        // Goal={{
+        //   name: "",
+        //   target: 0,
+        //   current: 0,
+        //   date: "",
+        // }}
+      />
     </div>
   );
   }
