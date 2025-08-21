@@ -42,10 +42,14 @@ const Income: React.FC = () => {
   };
 
   const totalIncome = incomes.reduce((sum, inc) => sum + (isNaN(inc.amount) ? 0 : inc.amount), 0);
+  // Store totalIncome in LocalStorage for use in MonthlyOverviewBar
+  useEffect(() => {
+    localStorage.setItem("budgetBuddyTotalIncome", totalIncome.toString());
+  }, [totalIncome]);
 
   return (
     <div style={{ maxWidth: 500, margin: "0 auto" }}>
-      <h2>Monthly Income</h2>
+      <h2>Source Income</h2>
       {/* Labels Row */}
       <div style={{ display: "flex", alignItems: "center", marginBottom: 4 }}>
         <label style={{ flex: 2, marginRight: 8, textAlign: "left" }}>Account</label>
@@ -75,8 +79,21 @@ const Income: React.FC = () => {
             onChange={e => handleChange(idx, "date", e.target.value)}
             style={{ marginRight: 8, flex: 1 }}
           />
-          <button onClick={() => addIncome(idx)} title="Add income" style={{ marginRight: 4 }}>+</button>
-          <button onClick={() => removeIncome(idx)} title="Remove income" disabled={incomes.length === 1}>-</button>
+          <button
+            onClick={() => addIncome(idx)}
+            title="Add income"
+            style={{ marginRight: 4, fontSize: '10px', padding: '0.34em 0.80em', fontWeight: 900 }}
+          >
+            +
+          </button>
+          <button
+            onClick={() => removeIncome(idx)}
+            title="Remove income"
+            disabled={incomes.length === 1}
+            style={{ fontSize: '10px',  padding: '0.34em 0.80em', fontWeight: 900 }}
+          >
+            -
+          </button>
         </div>
       ))}
       <div style={{ marginTop: 16, fontWeight: "bold" }}>

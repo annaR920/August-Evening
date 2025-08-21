@@ -40,7 +40,10 @@ function App() {
   return (
     <div className="main-container">
       <Header />
-      <MonthlyOverviewBar />
+      <MonthlyOverviewBar
+        monthlyExpenseTotal={expenses.reduce((sum, exp) => sum + exp.amount, 0)}
+        monthlyIncomeTotal={incomes.reduce((sum, inc) => sum + inc.amount, 0)}
+      />
       <div style={{ padding: 16 }}>
         <SpendingByCategoryPie
           data={totalsByCategory}
