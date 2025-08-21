@@ -7,6 +7,7 @@ import DiscretionaryExpense from "./components/DiscretionaryExpense";
 import FixedExpenses from "./components/FixedExpenses";
 import Income from "./components/Income";
 import type { Expense, ExpenseCategory, Income as IncomeType, CategoryTotal } from "./types";
+import { MonthlySummary } from "./components/MonthlySummary"; // <-- Import MonthlySummary
 
 function App() {
   // Example data — replace with real state or API data later
@@ -40,7 +41,10 @@ function App() {
   return (
     <div className="main-container">
       <Header />
-      <MonthlyOverviewBar />
+      <MonthlyOverviewBar
+        monthlyExpenseTotal={expenses.reduce((sum, exp) => sum + exp.amount, 0)}
+        monthlyIncomeTotal={incomes.reduce((sum, inc) => sum + inc.amount, 0)}
+      />
       <div style={{ padding: 16 }}>
         <SpendingByCategoryPie
           data={totalsByCategory}
@@ -52,8 +56,9 @@ function App() {
       <FixedExpenses />
       <DiscretionaryExpense />
       <SavingGoals />
+
     </div>
   );
-}
+  }
 
 export default App;
