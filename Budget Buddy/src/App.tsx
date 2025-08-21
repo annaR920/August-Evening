@@ -1,18 +1,20 @@
 import "./App.css";
 import { useEffect, useMemo, useState } from "react";
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import Header from "./components/Header";
 import MonthlyOverviewBar from "./components/MonthlyOverviewBar";
 import SpendingByCategoryPie from "./components/SpendingByCategoryPie";
-import SavingGoal from "./components/SavingsGoal";
-import DiscretionaryExpenses from "./components/DiscretionaryExpense";
+import SavingGoals from "./components/SavingGoals";
+import DiscretionaryExpense from "./components/DiscretionaryExpense";
 import FixedExpenses from "./components/FixedExpenses";
 import Income from "./components/Income";
-// Transactions view removed from main toggle per user request
 import type { ExpenseCategory, CategoryTotal } from "./types";
 import { LocalStorage } from "./components/LocalStorage";
 import type { Transaction } from "./components/transactions/TransactionRow";
+import CreditsPage from "./components/CreditsPage";
 
-function App() {
+// Dashboard component with all the budget functionality
+function Dashboard() {
   const [txVersion, setTxVersion] = useState(0);
 
   useEffect(() => {
@@ -44,11 +46,14 @@ function App() {
       const existing = categoryToTotal.get(category) ?? 0;
       categoryToTotal.set(category, existing + Math.max(amount, 0));
     }
-    return Array.from(categoryToTotal.entries()).map(([category, amount]) => ({ category, amount }));
+    return Array.from(categoryToTotal.entries()).map(([category, amount]) => ({
+      category,
+      amount,
+    }));
   }
 
   const transactions = useMemo(() => loadTransactions(), [txVersion]);
-  const totalsByCategory = useMemo(() => aggregateByCategory(transactions), [transactions]);
+  const totalsByCategory = useMemo(() => aggregateByCategory(transactions), [txVersion]);
   const totalIncome = (LocalStorage.getIncome() || []).reduce(
     (sum, inc) => sum + (Number(inc.amount) || 0),
     0
@@ -57,13 +62,21 @@ function App() {
   return (
     <div className="main-container">
       <Header />
-      <MonthlyOverviewBar />
-      <div style={{
-        padding: 16,
-        marginTop: 16,
-        background: '#ffffff',
-        borderBottom: '1px solid rgba(0,0,0,0.06)'
-      }}>
+      <div
+        style={{ padding: "20px", textAlign: "center", marginBottom: "20px" }}
+      >
+        <Link
+          to="/credits"
+          style={{ color: "#00bcd4", textDecoration: "underline" }}
+        >
+          View Credits Page
+        </Link>
+      </div>
+      <MonthlyOverviewBar
+        monthlyExpenseTotal={totalsByCategory.reduce((sum, c) => sum + c.amount, 0)}
+        monthlyIncomeTotal={totalIncome}
+      />
+      <div style={{ padding: 16 }}>
         <SpendingByCategoryPie
           data={totalsByCategory}
           title="Spending by Category"
@@ -81,14 +94,21 @@ function App() {
         margin: '0 auto'
       }}>
         <FixedExpenses />
-        <DiscretionaryExpenses />
+        <DiscretionaryExpense />
       </div>
-      <SavingGoal 
-        name="Emergency Fund"
-        target={10000}
-        current={2500}
-      />
+      <SavingGoals />
     </div>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/credits" element={<CreditsPage />} />
+      </Routes>
+    </Router>
   );
 }
 
