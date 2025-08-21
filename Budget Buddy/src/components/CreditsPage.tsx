@@ -64,7 +64,18 @@ export default function CreditsPage() {
         </div>
 
         {/* Main Content Card */}
-        <Card className="bg-black/40 backdrop-blur-lg border border-slate-600/50 shadow-2xl">
+        <Card className="bg-black/40 backdrop-blur-lg border border-slate-600/50 shadow-2xl relative">
+          {/* Back Button */}
+          <div style={{ position: 'absolute', top: 16, left: 16, zIndex: 10 }}>
+            <Button
+              variant="outline"
+              size="default"
+              className="bg-slate-900/60 border-cyan-500/50 text-indigo-500 hover:bg-gray-100 hover:border-cyan-400 hover:text-cyan-200 transition-all duration-200 font-medium shadow-md hover:shadow-lg flex-shrink-0"
+              onClick={() => window.history.back()}
+            >
+              ← Back
+            </Button>
+          </div>
           <CardHeader className="text-center pb-6">
             <CardTitle className="text-3xl font-semibold text-cyan-300">
               Meet the Team
@@ -73,9 +84,7 @@ export default function CreditsPage() {
               The talented individuals behind BudgetBuddy
             </p>
           </CardHeader>
-          
           <Separator className="mx-8 bg-slate-600/50" />
-
           <CardContent className="p-8">
             <div className="grid gap-6">
               {developers.map((dev, idx) => (

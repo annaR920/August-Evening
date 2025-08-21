@@ -20,14 +20,14 @@ function Dashboard() {
           View Credits Page
         </Link>
       </div>
-      {/* Uncomment these when ready:
+      
       <MonthlyOverviewBar />
       <SpendingCategoriePie />
       <Income />
       <FixedExpenses />
       <DiscretionaryExpense />
       <SavingGoals />
-      */}
+      
     </>
   );
 }
