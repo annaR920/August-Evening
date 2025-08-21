@@ -2,7 +2,7 @@ import "./App.css";
 import Header from "./components/Header";
 import MonthlyOverviewBar from "./components/MonthlyOverviewBar";
 import SpendingByCategoryPie from "./components/SpendingByCategoryPie";
-import SavingGoals from "./components/SavingGoals";
+import SavingGoal from "./components/SavingsGoal";
 import DiscretionaryExpense from "./components/DiscretionaryExpense";
 import FixedExpenses from "./components/FixedExpenses";
 import Income from "./components/Income";
@@ -54,7 +54,7 @@ function App() {
       <Income />
       <FixedExpenses />
       <DiscretionaryExpense />
-      <SavingGoals />
+      <SavingGoal />
     </div>
   );
 }
