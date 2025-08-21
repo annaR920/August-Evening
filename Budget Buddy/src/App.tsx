@@ -51,10 +51,7 @@ function App() {
       <Income />
       <FixedExpenses />
       <DiscretionaryExpense />
-      <SavingGoals 
-        name={""} 
-        target={0} 
-        current={0} />
+      <SavingGoals />
     </div>
   );
 }
