@@ -1,10 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import TransactionRow, { type Transaction } from './transactions/TransactionRow';
-import { LocalStorage } from './LocalStorage';
+
 import { useLocalStorageList } from './expenses/useLocalStorageList';
 
 const FixedExpenses: React.FC = () => {
-  const [categories, setCategories] = useLocalStorageList('bb_categories', [
+  const [categories, setCategories] = useLocalStorageList('bb_expense_categories', [
     "Housing",
     "Utilities", 
     "Transportation",
@@ -47,23 +47,79 @@ const FixedExpenses: React.FC = () => {
       const stored = localStorage.getItem('bb_account_balances');
       if (stored) {
         const parsed = JSON.parse(stored);
-        if (parsed && typeof parsed === 'object') setAccountBalances(parsed);
+        if (parsed && typeof parsed === 'object') {
+          console.log('Loaded stored account balances:', parsed);
+          setAccountBalances(parsed);
+        }
+      } else {
+        console.log('No stored account balances found, starting with empty balances');
+        setAccountBalances({});
       }
-    } catch {}
-    const onIncome = () => {
+    } catch (error) {
+      console.error('Error loading account balances:', error);
+      setAccountBalances({});
+    }
+    
+    const updateAccountBalancesFromIncome = () => {
       try {
-        const incomes = (LocalStorage.getIncome?.() || []) as Array<{ amount: number; name?: string; date?: string }>;
-        // Simple rule: add total income to Checking by default if present
-        const totalIncome = incomes.reduce((s, i) => s + (Number(i.amount) || 0), 0);
-        setAccountBalances(prev => ({ ...prev, Checking: Number(prev.Checking ?? 0) + totalIncome }));
-      } catch {}
+        const incomeTransactions = JSON.parse(localStorage.getItem('bb_tx_income') || '[]');
+        console.log('Income transactions found:', incomeTransactions);
+        
+        // Only update if we have income transactions and no existing balances
+        if (incomeTransactions.length > 0) {
+          setAccountBalances(prevBalances => {
+            // If we already have balances, don't add income again
+            if (Object.keys(prevBalances).length > 0) {
+              console.log('Account balances already exist, skipping income addition');
+              return prevBalances;
+            }
+            
+            const newBalances = { ...prevBalances };
+            
+            // Add income to the specified accounts (only once)
+            incomeTransactions.forEach((income: any) => {
+              if (income.account && income.amount) {
+                const account = income.account;
+                const amount = Number(income.amount) || 0;
+                console.log(`Adding ${amount} to ${account} account`);
+                newBalances[account] = (newBalances[account] || 0) + amount;
+              }
+            });
+            
+            console.log('Updated account balances:', newBalances);
+            return newBalances;
+          });
+        }
+      } catch (error) {
+        console.error('Error updating account balances from income:', error);
+      }
     };
+    
+    // Update balances when income changes
+    const onIncome = () => updateAccountBalancesFromIncome();
     window.addEventListener('bb:income-updated', onIncome);
-    return () => window.removeEventListener('bb:income-updated', onIncome);
-  }, []);
+    
+    // Listen for account balance updates from other components
+    const onAccountBalancesUpdated = (event: CustomEvent) => {
+      console.log('FixedExpenses - Received account balance update from other component:', event.detail);
+      setAccountBalances(event.detail);
+    };
+    window.addEventListener('bb:account-balances-updated', onAccountBalancesUpdated as EventListener);
+    
+    // Initial update
+    updateAccountBalancesFromIncome();
+    
+    return () => {
+      window.removeEventListener('bb:income-updated', onIncome);
+      window.removeEventListener('bb:account-balances-updated', onAccountBalancesUpdated as EventListener);
+    };
+  }, []); // Remove accountBalances dependency to prevent infinite loops
 
   useEffect(() => {
     try { localStorage.setItem('bb_account_balances', JSON.stringify(accountBalances)); } catch {}
+    
+    // Notify other components that account balances have changed
+    try { window.dispatchEvent(new CustomEvent('bb:account-balances-updated', { detail: accountBalances })); } catch {}
   }, [accountBalances]);
 
   useEffect(() => {
@@ -74,9 +130,11 @@ const FixedExpenses: React.FC = () => {
 
   // keep input text in sync when switching accounts/balances
   useEffect(() => {
+    const balanceValue = String(accountBalances[selectedBalanceAccount] ?? '');
+    console.log(`Syncing balance input for ${selectedBalanceAccount}:`, balanceValue, 'from accountBalances:', accountBalances);
     setBalanceInput(prev => ({
       ...prev,
-      [selectedBalanceAccount]: prev[selectedBalanceAccount] ?? String(accountBalances[selectedBalanceAccount] ?? ''),
+      [selectedBalanceAccount]: balanceValue,
     }));
   }, [selectedBalanceAccount, accountBalances]);
 
@@ -240,6 +298,8 @@ const FixedExpenses: React.FC = () => {
 
   // Debug logging
   console.log('FixedExpenses render - rows:', rows, 'isExpanded:', isExpanded, 'categories:', categories, 'accounts:', accounts);
+  console.log('Current account balances:', accountBalances);
+  console.log('Selected balance account:', selectedBalanceAccount);
 
   return (
     <div>
@@ -290,6 +350,103 @@ const FixedExpenses: React.FC = () => {
             }}
             style={{ padding: '6px 10px', border: '1px solid #ced4da', borderRadius: 6, width: 140 }}
           />
+          
+          {/* Debug info */}
+          <div style={{ fontSize: '12px', color: '#666', marginLeft: '20px' }}>
+            <div>Income in localStorage: {(() => {
+              try {
+                const income = JSON.parse(localStorage.getItem('bb_tx_income') || '[]');
+                return income.length > 0 ? `${income.length} transactions` : 'None';
+              } catch { return 'Error reading'; }
+            })()}</div>
+            <div>Current balances: {JSON.stringify(accountBalances)}</div>
+            <div>Raw income data: {(() => {
+              try {
+                const income = JSON.parse(localStorage.getItem('bb_tx_income') || '[]');
+                return JSON.stringify(income.slice(0, 3)); // Show first 3 transactions
+              } catch { return 'Error reading'; }
+            })()}</div>
+            <button 
+              onClick={() => {
+                try {
+                  const incomeTransactions = JSON.parse(localStorage.getItem('bb_tx_income') || '[]');
+                  console.log('Manual refresh - Income transactions found:', incomeTransactions);
+                  
+                  setAccountBalances(prevBalances => {
+                    const newBalances = { ...prevBalances };
+                    
+                    // Add income to the specified accounts
+                    incomeTransactions.forEach((income: any) => {
+                      if (income.account && income.amount) {
+                        const account = income.account;
+                        const amount = Number(income.amount) || 0;
+                        console.log(`Manual refresh - Adding ${amount} to ${account} account`);
+                        newBalances[account] = (newBalances[account] || 0) + amount;
+                      }
+                    });
+                    
+                    console.log('Manual refresh - Updated account balances:', newBalances);
+                    return newBalances;
+                  });
+                } catch (error) {
+                  console.error('Manual refresh - Error updating account balances from income:', error);
+                }
+              }}
+              style={{ 
+                fontSize: '10px', 
+                padding: '2px 6px', 
+                background: '#0ea5e9', 
+                color: '#fff', 
+                border: 'none', 
+                borderRadius: 4,
+                cursor: 'pointer',
+                marginTop: '4px'
+              }}
+            >
+              Refresh Balances
+            </button>
+            <button 
+              onClick={() => {
+                // Reset all account balances to 0
+                setAccountBalances({});
+                localStorage.removeItem('bb_account_balances');
+                console.log('Reset all account balances to 0');
+              }}
+              style={{ 
+                fontSize: '10px', 
+                padding: '2px 6px', 
+                background: '#dc2626', 
+                color: '#fff', 
+                border: 'none', 
+                borderRadius: 4,
+                cursor: 'pointer',
+                marginTop: '4px',
+                marginLeft: '4px'
+              }}
+            >
+              Reset Balances
+            </button>
+            <button 
+              onClick={() => {
+                // Force sync with other components
+                try { window.dispatchEvent(new CustomEvent('bb:account-balances-updated', { detail: accountBalances })); } catch {}
+                console.log('Forced sync with other components');
+              }}
+              style={{ 
+                fontSize: '10px', 
+                padding: '2px 6px', 
+                background: '#f59e0b', 
+                color: '#fff', 
+                border: 'none', 
+                borderRadius: 4,
+                cursor: 'pointer',
+                marginTop: '4px',
+                marginLeft: '4px'
+              }}
+            >
+              Force Sync
+            </button>
+          </div>
         </div>
       )}
 

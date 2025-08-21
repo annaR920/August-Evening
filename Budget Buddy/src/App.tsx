@@ -9,7 +9,7 @@ import DiscretionaryExpense from "./components/DiscretionaryExpense";
 import FixedExpenses from "./components/FixedExpenses";
 import Income from "./components/Income";
 import type { ExpenseCategory, CategoryTotal } from "./types";
-import { LocalStorage } from "./components/LocalStorage";
+
 import type { Transaction } from "./components/transactions/TransactionRow";
 import CreditsPage from "./components/CreditsPage";
 
@@ -54,10 +54,14 @@ function Dashboard() {
 
   const transactions = useMemo(() => loadTransactions(), [txVersion]);
   const totalsByCategory = useMemo(() => aggregateByCategory(transactions), [txVersion]);
-  const totalIncome = (LocalStorage.getIncome() || []).reduce(
-    (sum, inc) => sum + (Number(inc.amount) || 0),
-    0
-  );
+  const totalIncome = useMemo(() => {
+    try {
+      const incomeTransactions = JSON.parse(localStorage.getItem('bb_tx_income') || '[]');
+      return incomeTransactions.reduce((sum: number, inc: any) => sum + (Number(inc.amount) || 0), 0);
+    } catch {
+      return 0;
+    }
+  }, [txVersion]);
 
   return (
     <div className="main-container">

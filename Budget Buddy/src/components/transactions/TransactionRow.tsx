@@ -7,7 +7,8 @@ export interface Transaction {
   account: string;
   category: string;
   payee: string;
-  amount: number | string; // positive = withdrawal, negative = deposit. String allowed during typing.
+  amount: number | string; // positive = withdrawal, negative = deposit. String (including "") allowed during typing.
+  type?: 'expense' | 'income'; // 'expense' is default, 'income' for money coming in
 }
 
 interface Props {
@@ -21,6 +22,7 @@ interface Props {
   onNewCategoryRequested: (id: string) => void;
   onNewAccountRequested: (id: string) => void;
   lineBalance: number; // balance after this transaction
+  isIncome?: boolean; // true for income transactions
 }
 
 const inputStyle: React.CSSProperties = {
@@ -42,6 +44,7 @@ const TransactionRow: React.FC<Props> = ({
   onNewAccountRequested,
   lineBalance,
   payeeSuggestions,
+  isIncome = false,
 }) => {
   return (
     <div
@@ -121,7 +124,7 @@ const TransactionRow: React.FC<Props> = ({
       <>
         <input
           type="text"
-          placeholder="Payee"
+          placeholder={isIncome ? "Income Source" : "Payee"}
           value={value.payee}
           onChange={(e) => onChange(value.id, { payee: e.target.value })}
           list={`payees-${value.id}`}
@@ -142,15 +145,15 @@ const TransactionRow: React.FC<Props> = ({
           type="text"
           placeholder="0.00"
           value={
-            value.amount === 0 || value.amount === "0" ? "0.00" : 
-            (typeof value.amount === 'number' ? value.amount.toFixed(2) : value.amount || "0.00")
+            typeof value.amount === 'string' ? value.amount : 
+            (value.amount === 0 ? "" : value.amount.toFixed(2))
           }
           onChange={(e) => {
             const val = e.target.value;
-            // Allow empty, or valid decimal format (digits with optional decimal point and up to 2 decimal places)
+            // Allow empty, partial numbers, and valid decimal format
             if (val === "" || /^\d*\.?\d{0,2}$/.test(val)) {
               if (val === "") {
-                onChange(value.id, { amount: 0 });
+                onChange(value.id, { amount: "" });
               } else {
                 // Always store as string while typing to preserve decimal point
                 onChange(value.id, { amount: val });
@@ -160,11 +163,15 @@ const TransactionRow: React.FC<Props> = ({
           onBlur={(e) => {
             // Format to 2 decimal places when field loses focus
             const val = e.target.value;
-            const num = parseFloat(val);
-            if (!isNaN(num)) {
-              onChange(value.id, { amount: parseFloat(num.toFixed(2)) });
-            } else {
+            if (val === "" || val === "0") {
               onChange(value.id, { amount: 0 });
+            } else {
+              const num = parseFloat(val);
+              if (!isNaN(num)) {
+                onChange(value.id, { amount: parseFloat(num.toFixed(2)) });
+              } else {
+                onChange(value.id, { amount: 0 });
+              }
             }
           }}
           style={{
@@ -177,30 +184,31 @@ const TransactionRow: React.FC<Props> = ({
       <div style={{ textAlign: "right", fontWeight: 600 }}>${lineBalance.toFixed(2)}</div>
 
       <div style={{ display: "flex", gap: 6 }}>
-        {(() => {
-          const isComplete = Boolean(
-            value?.date && value?.account && value?.category && (value?.payee?.trim()?.length ?? 0) > 0 && (Number(value?.amount) || 0) > 0
-          );
-          return (
-            <button
-              onClick={() => onAdd(value.id)}
-              title={isComplete ? "Add transaction" : "Fill date, account, category, payee, and amount to add"}
-              disabled={!isComplete}
-              aria-disabled={!isComplete}
-              style={{
-                background: isComplete ? "#16a34a" : "#9CA3AF",
-                color: "#fff",
-                border: "none",
-                borderRadius: 6,
-                width: 36,
-                height: 36,
-                cursor: isComplete ? "pointer" : "not-allowed",
-              }}
-            >
-              +
-            </button>
-          );
-        })()}
+                                   {(() => {
+            const amountValue = typeof value?.amount === 'string' && value.amount !== "" ? parseFloat(value.amount) : Number(value?.amount) || 0;
+            const isComplete = Boolean(
+              value?.date && value?.account && value?.category && (value?.payee?.trim()?.length ?? 0) > 0 && amountValue > 0
+            );
+           return (
+             <button
+               onClick={() => onAdd(value.id)}
+               title={isComplete ? (isIncome ? "Add income" : "Add transaction") : (isIncome ? "Fill date, account, category, income source, and amount to add" : "Fill date, account, category, payee, and amount to add")}
+               disabled={!isComplete}
+               aria-disabled={!isComplete}
+               style={{
+                 background: isComplete ? "#16a34a" : "#9CA3AF",
+                 color: "#fff",
+                 border: "none",
+                 borderRadius: 6,
+                 width: 36,
+                 height: 36,
+                 cursor: isComplete ? "pointer" : "not-allowed",
+               }}
+             >
+               +
+             </button>
+           );
+         })()}
         <button
           onClick={() => onRemove(value.id)}
           title="Remove transaction"
