@@ -58,10 +58,11 @@ function Dashboard() {
   const totalIncome = incomes.reduce((sum, inc) => sum + inc.amount, 0);
 
   return (
-    <>
+    <div className="main-container">
       <Header />
-      <div style={{ padding: "20px", textAlign: "center" }}>
-        <h1>BudgetBuddy Dashboard</h1>
+      <div
+        style={{ padding: "20px", textAlign: "center", marginBottom: "20px" }}
+      >
         <Link
           to="/credits"
           style={{ color: "#00bcd4", textDecoration: "underline" }}
@@ -85,7 +86,7 @@ function Dashboard() {
       <FixedExpenses />
       <DiscretionaryExpense />
       <SavingGoals />
-    </>
+    </div>
   );
 }
 
