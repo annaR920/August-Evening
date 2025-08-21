@@ -56,9 +56,13 @@ function App() {
       <FixedExpenses />
       <DiscretionaryExpense />
       <SavingGoals 
-        name={""} 
-        target={0} 
-        current={0} />
+        // Goal={{
+        //   name: "",
+        //   target: 0,
+        //   current: 0,
+        //   date: "",
+        // }}
+      />
     </div>
   );
   }

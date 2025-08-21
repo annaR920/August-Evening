@@ -47,6 +47,7 @@ const Income: React.FC = () => {
     localStorage.setItem("budgetBuddyTotalIncome", totalIncome.toString());
   }, [totalIncome]);
 
+
   return (
     <div style={{ maxWidth: 500, margin: "0 auto" }}>
       <h2>Source Income</h2>
@@ -79,7 +80,7 @@ const Income: React.FC = () => {
             onChange={e => handleChange(idx, "date", e.target.value)}
             style={{ marginRight: 8, flex: 1 }}
           />
-          <button
+          {/* <button
             onClick={() => addIncome(idx)}
             title="Add income"
             style={{ marginRight: 4, fontSize: '10px', padding: '0.34em 0.80em', fontWeight: 900 }}
@@ -93,7 +94,38 @@ const Income: React.FC = () => {
             style={{ fontSize: '10px',  padding: '0.34em 0.80em', fontWeight: 900 }}
           >
             -
-          </button>
+          </button> */}
+
+          {idx === 0 ? (
+            <>
+            <button
+              onClick={() => addIncome(idx)}
+              title="Add Income"
+              style={{ fontSize: '0.75em', padding: '2px 8px', width: 24, height: 24, marginRight: 4 }}
+            >
+              +
+            </button>
+            <span style={{ width: 24, height: 24 }}></span>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={() => addIncome(idx)}
+                title="Add Income"
+                style={{ fontSize: '0.75em', padding: '2px 8px', width: 24, height: 24, marginRight: 4 }}
+              >
+                +
+              </button>
+              <button
+                onClick={() => removeIncome(idx)}
+                title="Remove Income"
+                disabled={incomes.length === 1}
+                style={{ fontSize: '0.75em', padding: '2px 8px', width: 24, height: 24, marginRight: 4 }}
+              >
+                -
+              </button>
+            </>
+          )}
         </div>
       ))}
       <div style={{ marginTop: 16, fontWeight: "bold" }}>
