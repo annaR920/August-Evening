@@ -7,7 +7,7 @@ export interface Transaction {
   account: string;
   category: string;
   payee: string;
-  amount: number; // positive = withdrawal, negative = deposit
+  amount: number | string; // positive = withdrawal, negative = deposit. String allowed during typing.
 }
 
 interface Props {
@@ -138,13 +138,41 @@ const TransactionRow: React.FC<Props> = ({
         </datalist>
       </>
 
-      <input
-        type="number"
-        placeholder="0.00"
-        value={value.amount === 0 ? "" : value.amount || ""}
-        onChange={(e) => onChange(value.id, { amount: parseFloat(e.target.value) || 0 })}
-        style={inputStyle}
-      />
+                           <input
+          type="text"
+          placeholder="0.00"
+          value={
+            value.amount === 0 || value.amount === "0" ? "0.00" : 
+            (typeof value.amount === 'number' ? value.amount.toFixed(2) : value.amount || "0.00")
+          }
+          onChange={(e) => {
+            const val = e.target.value;
+            // Allow empty, or valid decimal format (digits with optional decimal point and up to 2 decimal places)
+            if (val === "" || /^\d*\.?\d{0,2}$/.test(val)) {
+              if (val === "") {
+                onChange(value.id, { amount: 0 });
+              } else {
+                // Always store as string while typing to preserve decimal point
+                onChange(value.id, { amount: val });
+              }
+            }
+          }}
+          onBlur={(e) => {
+            // Format to 2 decimal places when field loses focus
+            const val = e.target.value;
+            const num = parseFloat(val);
+            if (!isNaN(num)) {
+              onChange(value.id, { amount: parseFloat(num.toFixed(2)) });
+            } else {
+              onChange(value.id, { amount: 0 });
+            }
+          }}
+          style={{
+            ...inputStyle,
+            color: '#000000',
+            backgroundColor: '#ffffff'
+          }}
+        />
 
       <div style={{ textAlign: "right", fontWeight: 600 }}>${lineBalance.toFixed(2)}</div>
 
