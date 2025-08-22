@@ -2,8 +2,10 @@ import React, { useEffect, useMemo, useState } from 'react';
 import TransactionRow, { type Transaction } from './transactions/TransactionRow';
 
 import { useLocalStorageList } from './expenses/useLocalStorageList';
+import { useDebug } from '../contexts/DebugContext';
 
 const FixedExpenses: React.FC = () => {
+  const { isDebugVisible } = useDebug();
   const [categories, setCategories] = useLocalStorageList('bb_expense_categories', [
     "Housing",
     "Utilities", 
@@ -352,7 +354,8 @@ const FixedExpenses: React.FC = () => {
           />
           
           {/* Debug info */}
-          <div style={{ fontSize: '12px', color: '#666', marginLeft: '20px' }}>
+          {isDebugVisible && (
+            <div style={{ fontSize: '12px', color: '#666', marginLeft: '20px' }}>
             <div>Income in localStorage: {(() => {
               try {
                 const income = JSON.parse(localStorage.getItem('bb_tx_income') || '[]');
@@ -446,7 +449,8 @@ const FixedExpenses: React.FC = () => {
             >
               Force Sync
             </button>
-          </div>
+            </div>
+          )}
         </div>
       )}
 

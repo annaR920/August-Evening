@@ -1,9 +1,6 @@
 import React from "react";
-import { useDebug } from "../contexts/DebugContext";
 
 const Header: React.FC = () => {
-  const { isDebugVisible, toggleDebug } = useDebug();
-
   return (
     <header style={{
       textAlign: 'center',
@@ -12,8 +9,7 @@ const Header: React.FC = () => {
       backgroundColor: '#1F2937',
       borderRadius: '16px',
       border: '3px solid #4B5563',
-      boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
-      position: 'relative'
+      boxShadow: '0 8px 32px rgba(0,0,0,0.3)'
     }}>
       <h1 style={{
         margin: '0px',
@@ -30,29 +26,6 @@ const Header: React.FC = () => {
       }}>
         Budget Buddy
       </h1>
-      
-      {/* Debug Toggle Button */}
-      <button
-        onClick={toggleDebug}
-        style={{
-          position: 'absolute',
-          top: '20px',
-          right: '20px',
-          padding: '8px 12px',
-          fontSize: '12px',
-          fontWeight: '600',
-          borderRadius: '6px',
-          border: 'none',
-          background: isDebugVisible ? '#ef4444' : '#6b7280',
-          color: 'white',
-          cursor: 'pointer',
-          transition: 'all 0.2s',
-          boxShadow: '0 2px 4px rgba(0,0,0,0.3)'
-        }}
-        title={isDebugVisible ? 'Hide debug tools' : 'Show debug tools'}
-      >
-        🐛 {isDebugVisible ? 'Hide Debug' : 'Show Debug'}
-      </button>
     </header>
   );
 };
