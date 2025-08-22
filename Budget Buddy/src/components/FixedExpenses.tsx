@@ -322,10 +322,10 @@ const FixedExpenses: React.FC = () => {
           <select
             value={selectedBalanceAccount || ''}
             onChange={(e) => setSelectedBalanceAccount(e.target.value)}
-            style={{ padding: '6px 10px', border: '1px solid #ced4da', borderRadius: 6 }}
+            style={{ padding: '6px 10px', border: '1px solid #ced4da', borderRadius: 6, color: '#1f2937', backgroundColor: 'white' }}
           >
             {accounts.map(a => (
-              <option key={a} value={a}>{a}</option>
+              <option key={a} value={a} style={{ color: '#1f2937' }}>{a}</option>
             ))}
           </select>
           <input
