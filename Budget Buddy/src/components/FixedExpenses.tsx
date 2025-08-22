@@ -1,12 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import TransactionRow from './transactions/TransactionRow';
-import { type Transaction } from '../types';
+import TransactionRow, { type Transaction } from './transactions/TransactionRow';
 
 import { useLocalStorageList } from './expenses/useLocalStorageList';
-import { useDebug } from '../contexts/DebugContext';
 
 const FixedExpenses: React.FC = () => {
-  const { isDebugVisible } = useDebug();
   const [categories, setCategories] = useLocalStorageList('bb_expense_categories', [
     "Housing",
     "Utilities", 
@@ -355,103 +352,101 @@ const FixedExpenses: React.FC = () => {
           />
           
           {/* Debug info */}
-          {isDebugVisible && (
-            <div style={{ fontSize: '12px', color: '#666', marginLeft: '20px' }}>
-              <div>Income in localStorage: {(() => {
+          <div style={{ fontSize: '12px', color: '#666', marginLeft: '20px' }}>
+            <div>Income in localStorage: {(() => {
+              try {
+                const income = JSON.parse(localStorage.getItem('bb_tx_income') || '[]');
+                return income.length > 0 ? `${income.length} transactions` : 'None';
+              } catch { return 'Error reading'; }
+            })()}</div>
+            <div>Current balances: {JSON.stringify(accountBalances)}</div>
+            <div>Raw income data: {(() => {
+              try {
+                const income = JSON.parse(localStorage.getItem('bb_tx_income') || '[]');
+                return JSON.stringify(income.slice(0, 3)); // Show first 3 transactions
+              } catch { return 'Error reading'; }
+            })()}</div>
+            <button 
+              onClick={() => {
                 try {
-                  const income = JSON.parse(localStorage.getItem('bb_tx_income') || '[]');
-                  return income.length > 0 ? `${income.length} transactions` : 'None';
-                } catch { return 'Error reading'; }
-              })()}</div>
-              <div>Current balances: {JSON.stringify(accountBalances)}</div>
-              <div>Raw income data: {(() => {
-                try {
-                  const income = JSON.parse(localStorage.getItem('bb_tx_income') || '[]');
-                  return JSON.stringify(income.slice(0, 3)); // Show first 3 transactions
-                } catch { return 'Error reading'; }
-              })()}</div>
-              <button 
-                onClick={() => {
-                  try {
-                    const incomeTransactions = JSON.parse(localStorage.getItem('bb_tx_income') || '[]');
-                    console.log('Manual refresh - Income transactions found:', incomeTransactions);
+                  const incomeTransactions = JSON.parse(localStorage.getItem('bb_tx_income') || '[]');
+                  console.log('Manual refresh - Income transactions found:', incomeTransactions);
+                  
+                  setAccountBalances(prevBalances => {
+                    const newBalances = { ...prevBalances };
                     
-                    setAccountBalances(prevBalances => {
-                      const newBalances = { ...prevBalances };
-                      
-                      // Add income to the specified accounts
-                      incomeTransactions.forEach((income: any) => {
-                        if (income.account && income.amount) {
-                          const account = income.account;
-                          const amount = Number(income.amount) || 0;
-                          console.log(`Manual refresh - Adding ${amount} to ${account} account`);
-                          newBalances[account] = (newBalances[account] || 0) + amount;
-                        }
-                      });
-                      
-                      console.log('Manual refresh - Updated account balances:', newBalances);
-                      return newBalances;
+                    // Add income to the specified accounts
+                    incomeTransactions.forEach((income: any) => {
+                      if (income.account && income.amount) {
+                        const account = income.account;
+                        const amount = Number(income.amount) || 0;
+                        console.log(`Manual refresh - Adding ${amount} to ${account} account`);
+                        newBalances[account] = (newBalances[account] || 0) + amount;
+                      }
                     });
-                  } catch (error) {
-                    console.error('Manual refresh - Error updating account balances from income:', error);
-                  }
-                }}
-                style={{ 
-                  fontSize: '10px', 
-                  padding: '2px 6px', 
-                  background: '#0ea5e9', 
-                  color: '#fff', 
-                  border: 'none', 
-                  borderRadius: 4,
-                  cursor: 'pointer',
-                  marginTop: '4px'
-                }}
-              >
-                Refresh Balances
-              </button>
-              <button 
-                onClick={() => {
-                  // Reset all account balances to 0
-                  setAccountBalances({});
-                  localStorage.removeItem('bb_account_balances');
-                  console.log('Reset all account balances to 0');
-                }}
-                style={{ 
-                  fontSize: '10px', 
-                  padding: '2px 6px', 
-                  background: '#dc2626', 
-                  color: '#fff', 
-                  border: 'none', 
-                  borderRadius: 4,
-                  cursor: 'pointer',
-                  marginTop: '4px',
-                  marginLeft: '4px'
-                }}
-              >
-                Reset Balances
-              </button>
-              <button 
-                onClick={() => {
-                  // Force sync with other components
-                  try { window.dispatchEvent(new CustomEvent('bb:account-balances-updated', { detail: accountBalances })); } catch {}
-                  console.log('Forced sync with other components');
-                }}
-                style={{ 
-                  fontSize: '10px', 
-                  padding: '2px 6px', 
-                  background: '#f59e0b', 
-                  color: '#fff', 
-                  border: 'none', 
-                  borderRadius: 4,
-                  cursor: 'pointer',
-                  marginTop: '4px',
-                  marginLeft: '4px'
-                }}
-              >
-                Force Sync
-              </button>
-            </div>
-          )}
+                    
+                    console.log('Manual refresh - Updated account balances:', newBalances);
+                    return newBalances;
+                  });
+                } catch (error) {
+                  console.error('Manual refresh - Error updating account balances from income:', error);
+                }
+              }}
+              style={{ 
+                fontSize: '10px', 
+                padding: '2px 6px', 
+                background: '#0ea5e9', 
+                color: '#fff', 
+                border: 'none', 
+                borderRadius: 4,
+                cursor: 'pointer',
+                marginTop: '4px'
+              }}
+            >
+              Refresh Balances
+            </button>
+            <button 
+              onClick={() => {
+                // Reset all account balances to 0
+                setAccountBalances({});
+                localStorage.removeItem('bb_account_balances');
+                console.log('Reset all account balances to 0');
+              }}
+              style={{ 
+                fontSize: '10px', 
+                padding: '2px 6px', 
+                background: '#dc2626', 
+                color: '#fff', 
+                border: 'none', 
+                borderRadius: 4,
+                cursor: 'pointer',
+                marginTop: '4px',
+                marginLeft: '4px'
+              }}
+            >
+              Reset Balances
+            </button>
+            <button 
+              onClick={() => {
+                // Force sync with other components
+                try { window.dispatchEvent(new CustomEvent('bb:account-balances-updated', { detail: accountBalances })); } catch {}
+                console.log('Forced sync with other components');
+              }}
+              style={{ 
+                fontSize: '10px', 
+                padding: '2px 6px', 
+                background: '#f59e0b', 
+                color: '#fff', 
+                border: 'none', 
+                borderRadius: 4,
+                cursor: 'pointer',
+                marginTop: '4px',
+                marginLeft: '4px'
+              }}
+            >
+              Force Sync
+            </button>
+          </div>
         </div>
       )}
 

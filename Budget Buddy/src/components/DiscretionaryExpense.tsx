@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import TransactionRow from './transactions/TransactionRow';
-import { type Transaction } from '../types';
+import TransactionRow, { type Transaction } from './transactions/TransactionRow';
 
 import { useLocalStorageList } from './expenses/useLocalStorageList';
 import { useDebug } from '../contexts/DebugContext';
