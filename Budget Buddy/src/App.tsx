@@ -15,6 +15,7 @@ import type {
 } from "./types";
 
 import CreditsPage from "./components/CreditsPage";
+import { DebugProvider } from "./contexts/DebugContext";
 
 // Dashboard component with all the budget functionality
 function Dashboard() {
@@ -92,12 +93,14 @@ function Dashboard() {
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/credits" element={<CreditsPage />} />
-      </Routes>
-    </Router>
+    <DebugProvider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/credits" element={<CreditsPage />} />
+        </Routes>
+      </Router>
+    </DebugProvider>
   );
 }
 
