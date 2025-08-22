@@ -14,9 +14,19 @@ interface Goal {
 
 const SavingGoals = () => {
   const { isDebugVisible } = useDebug();
-  const [goals, setGoals] = useState<Goal[]>([
-    { name: "", target: 0, current: 0, date: "" },
-  ]);
+  const [goals, setGoals] = useState<Goal[]>([]);
+
+  // Goal creation flow state
+  const [showGoalCreationFlow, setShowGoalCreationFlow] = useState(false);
+  const [creationStep, setCreationStep] = useState(1);
+  const [newGoal, setNewGoal] = useState({
+    name: '',
+    target: 0,
+    current: 0,
+    date: '',
+    depositFrequency: 'monthly', // weekly, biweekly, monthly
+    initialDeposit: ''
+  });
 
   // Account balances and transfer state
   const [accountBalances, setAccountBalances] = useState<Record<string, number>>({});
@@ -53,7 +63,11 @@ const SavingGoals = () => {
       if (storedGoals) {
         const parsed = JSON.parse(storedGoals);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          setGoals(parsed);
+          // Filter out empty goals (goals with no name and zero target)
+          const validGoals = parsed.filter((goal: Goal) => 
+            goal.name.trim() !== "" || goal.target > 0 || goal.current > 0
+          );
+          setGoals(validGoals);
         }
       }
     } catch (error) {
@@ -147,18 +161,141 @@ const SavingGoals = () => {
     alert(`Successfully transferred $${amount} to ${goalAccountName}! This money is now earmarked for your goal and unavailable for spending.`);
   };
 
-  const addGoal = (index: number) => {
-    setGoals(goals => [
-      ...goals.slice(0, index + 1),
-      { name: "", target: 0, current: 0, date: "" },
-      ...goals.slice(index + 1),
-    ]);
+  // Helper function to check if we have any real goals
+  const hasRealGoals = () => {
+    return goals.some(goal => 
+      goal.name.trim() !== "" || goal.target > 0 || goal.current > 0
+    );
+  };
+
+  const addGoal = (index?: number) => {
+    const newGoal = { name: "", target: 0, current: 0, date: "" };
+    if (typeof index === 'number') {
+      setGoals(goals => [
+        ...goals.slice(0, index + 1),
+        newGoal,
+        ...goals.slice(index + 1),
+      ]);
+    } else {
+      setGoals(goals => [...goals, newGoal]);
+    }
+  };
+
+  const createFirstGoal = () => {
+    setShowGoalCreationFlow(true);
+    setCreationStep(1);
+    setNewGoal({
+      name: '',
+      target: 0,
+      current: 0,
+      date: '',
+      depositFrequency: 'monthly',
+      initialDeposit: ''
+    });
+  };
+
+  const completeGoalCreation = () => {
+    // Add the goal to the list
+    const goalToAdd = {
+      name: newGoal.name,
+      target: newGoal.target,
+      current: 0,
+      date: newGoal.date
+    };
+    
+    setGoals([goalToAdd]);
+    
+    // Process initial deposit if provided
+    if (newGoal.initialDeposit && selectedAccount) {
+      const depositAmount = parseFloat(newGoal.initialDeposit);
+      if (depositAmount > 0) {
+        handleInitialDeposit(depositAmount, goalToAdd.name);
+      }
+    }
+    
+    // Reset flow
+    setShowGoalCreationFlow(false);
+    setCreationStep(1);
+  };
+
+  const handleInitialDeposit = (amount: number, goalName: string) => {
+    const currentBalance = accountBalances[selectedAccount] || 0;
+    if (amount > currentBalance) {
+      alert(`Insufficient funds in ${selectedAccount}. Available: $${currentBalance.toFixed(2)}`);
+      return;
+    }
+
+    const goalAccountName = `${goalName} Account`;
+    const newBalances = { ...accountBalances };
+    newBalances[selectedAccount] = currentBalance - amount;
+    
+    if (!newBalances[goalAccountName]) {
+      newBalances[goalAccountName] = 0;
+    }
+    newBalances[goalAccountName] += amount;
+    
+    setAccountBalances(newBalances);
+    
+    // Update the goal's current amount
+    setGoals(prevGoals => prevGoals.map(goal =>
+      goal.name === goalName ? { ...goal, current: goal.current + amount } : goal
+    ));
+
+    try {
+      localStorage.setItem('bb_account_balances', JSON.stringify(newBalances));
+      window.dispatchEvent(new CustomEvent('bb:account-balances-updated', { detail: newBalances }));
+    } catch (error) {
+      console.error('Error saving account balances:', error);
+    }
   };
 
   const removeGoal = (index: number) => {
-    if (goals.length === 1) return;
     setGoals(goals => goals.filter((_, i) => i !== index));
   };
+
+  const deleteGoal = (index: number, goalName: string) => {
+    const confirmed = window.confirm(
+      `Are you sure you want to delete the goal "${goalName}"?\n\nThis will also remove any money earmarked for this goal and return it to your available balance.`
+    );
+    
+    if (!confirmed) return;
+
+    // Get the goal account name
+    const goalAccountName = `${goalName} Account`;
+    const goalAccountBalance = accountBalances[goalAccountName] || 0;
+
+    // If there's money in the goal account, we need to return it somewhere
+    if (goalAccountBalance > 0) {
+      const returnToAccount = accounts.length > 0 ? accounts[0] : 'Main Account';
+      const newBalances = { ...accountBalances };
+      
+      // Return the money to the first available account
+      if (!newBalances[returnToAccount]) {
+        newBalances[returnToAccount] = 0;
+      }
+      newBalances[returnToAccount] += goalAccountBalance;
+      
+      // Remove the goal account
+      delete newBalances[goalAccountName];
+      
+      setAccountBalances(newBalances);
+      
+      try {
+        localStorage.setItem('bb_account_balances', JSON.stringify(newBalances));
+        window.dispatchEvent(new CustomEvent('bb:account-balances-updated', { detail: newBalances }));
+      } catch (error) {
+        console.error('Error updating account balances:', error);
+      }
+      
+      alert(`Goal deleted! $${goalAccountBalance.toFixed(2)} has been returned to ${returnToAccount}.`);
+    }
+
+    // Remove the goal
+    removeGoal(index);
+  };
+
+  // Check if we should show empty state
+  const showEmptyState = !hasRealGoals() && goals.length === 0 && !showGoalCreationFlow;
 
   return (
     <div style={{ 
@@ -168,12 +305,439 @@ const SavingGoals = () => {
       boxSizing: "border-box",
       overflow: "hidden"
     }}>
-      <h2 style={{ marginBottom: "16px", fontSize: "1.5rem" }}>Saving Goals</h2>
-      
-      {/* Transfer Controls */}
-      <div style={{ 
-        display: "flex", 
-        flexDirection: "column",
+      <h2 style={{ marginBottom: "24px", fontSize: "1.5rem", textAlign: "left" }}>Saving Goals</h2>
+
+      {/* Empty State */}
+      {showEmptyState && (
+        <div style={{
+          textAlign: 'center',
+          padding: '32px 20px',
+          background: 'rgba(240, 249, 255, 0.6)',
+          borderRadius: '12px',
+          border: '1px solid rgba(14, 165, 233, 0.2)',
+          marginBottom: '24px',
+          backdropFilter: 'blur(10px)'
+        }}>
+          <div style={{
+            fontSize: '36px',
+            marginBottom: '12px',
+            opacity: '0.8'
+          }}>
+            🎯
+          </div>
+          <h3 style={{
+            margin: '0 0 8px 0',
+            fontSize: '1.2rem',
+            color: '#334155',
+            fontWeight: '500'
+          }}>
+            Start Your Savings Journey
+          </h3>
+          <p style={{
+            margin: '0 0 20px 0',
+            color: '#64748b',
+            fontSize: '0.9rem',
+            lineHeight: '1.4',
+            maxWidth: '350px',
+            marginLeft: 'auto',
+            marginRight: 'auto'
+          }}>
+            Set up your first savings goal to start building towards your dreams. 
+            Every goal starts with a single step!
+          </p>
+          <button
+            onClick={createFirstGoal}
+            style={{
+              background: '#0ea5e9',
+              color: 'white',
+              border: 'none',
+              padding: '10px 24px',
+              borderRadius: '6px',
+              fontSize: '0.95rem',
+              fontWeight: '500',
+              cursor: 'pointer',
+              boxShadow: '0 2px 4px rgba(14, 165, 233, 0.2)',
+              transition: 'all 0.2s ease',
+              opacity: '0.9'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.opacity = '1';
+              e.currentTarget.style.boxShadow = '0 4px 8px rgba(14, 165, 233, 0.3)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.opacity = '0.9';
+              e.currentTarget.style.boxShadow = '0 2px 4px rgba(14, 165, 233, 0.2)';
+            }}
+          >
+            Create Your First Goal
+          </button>
+        </div>
+      )}
+
+      {/* Step-by-Step Goal Creation Flow */}
+      {showGoalCreationFlow && (
+        <div style={{
+          background: 'white',
+          borderRadius: '12px',
+          border: '1px solid #e2e8f0',
+          padding: '24px',
+          marginBottom: '24px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+        }}>
+          <div style={{ marginBottom: '20px' }}>
+            <h3 style={{ margin: '0 0 8px 0', color: '#334155' }}>Create Your Savings Goal</h3>
+            <div style={{ 
+              display: 'flex', 
+              gap: '8px', 
+              marginBottom: '16px',
+              fontSize: '12px'
+            }}>
+              {[1,2,3,4,5].map(step => (
+                <div key={step} style={{
+                  width: '20%',
+                  height: '4px',
+                  background: step <= creationStep ? '#0ea5e9' : '#e2e8f0',
+                  borderRadius: '2px',
+                  transition: 'background 0.3s'
+                }} />
+              ))}
+            </div>
+            <p style={{ 
+              margin: '0', 
+              color: '#64748b', 
+              fontSize: '14px' 
+            }}>
+              Step {creationStep} of 5
+            </p>
+          </div>
+
+          {/* Step 1: Goal Name */}
+          {creationStep === 1 && (
+            <div>
+              <h4 style={{ margin: '0 0 12px 0', color: '#334155' }}>What's your savings goal?</h4>
+              <input
+                type="text"
+                placeholder="e.g., Emergency Fund, New Car, Vacation"
+                value={newGoal.name}
+                onChange={(e) => setNewGoal(prev => ({ ...prev, name: e.target.value }))}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  border: '2px solid #e2e8f0',
+                  borderRadius: '8px',
+                  fontSize: '16px',
+                  marginBottom: '16px',
+                  boxSizing: 'border-box',
+                  color: '#1f2937',
+                  backgroundColor: 'white'
+                }}
+              />
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button
+                  onClick={() => setShowGoalCreationFlow(false)}
+                  style={{
+                    padding: '10px 20px',
+                    border: '1px solid #d1d5db',
+                    background: 'white',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    color: '#6b7280'
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => setCreationStep(2)}
+                  disabled={!newGoal.name.trim()}
+                  style={{
+                    padding: '10px 20px',
+                    border: 'none',
+                    background: newGoal.name.trim() ? '#0ea5e9' : '#9ca3af',
+                    color: 'white',
+                    borderRadius: '6px',
+                    cursor: newGoal.name.trim() ? 'pointer' : 'not-allowed'
+                  }}
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Step 2: Target Amount */}
+          {creationStep === 2 && (
+            <div>
+              <h4 style={{ margin: '0 0 12px 0', color: '#334155' }}>How much do you want to save for "{newGoal.name}"?</h4>
+              <div style={{ display: 'flex', alignItems: 'center', marginBottom: '16px' }}>
+                <span style={{ fontSize: '24px', marginRight: '8px', color: '#6b7280' }}>$</span>
+                <input
+                  type="number"
+                  placeholder="1000"
+                  value={newGoal.target || ''}
+                  onChange={(e) => setNewGoal(prev => ({ ...prev, target: parseFloat(e.target.value) || 0 }))}
+                  style={{
+                    flex: 1,
+                    padding: '12px 16px',
+                    border: '2px solid #e2e8f0',
+                    borderRadius: '8px',
+                    fontSize: '16px',
+                    boxSizing: 'border-box',
+                    color: '#1f2937',
+                    backgroundColor: 'white'
+                  }}
+                />
+              </div>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button
+                  onClick={() => setCreationStep(1)}
+                  style={{
+                    padding: '10px 20px',
+                    border: '1px solid #d1d5db',
+                    background: 'white',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    color: '#6b7280'
+                  }}
+                >
+                  Back
+                </button>
+                <button
+                  onClick={() => setCreationStep(3)}
+                  disabled={!newGoal.target || newGoal.target <= 0}
+                  style={{
+                    padding: '10px 20px',
+                    border: 'none',
+                    background: (newGoal.target && newGoal.target > 0) ? '#0ea5e9' : '#9ca3af',
+                    color: 'white',
+                    borderRadius: '6px',
+                    cursor: (newGoal.target && newGoal.target > 0) ? 'pointer' : 'not-allowed'
+                  }}
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Step 3: Target Date */}
+          {creationStep === 3 && (
+            <div>
+              <h4 style={{ margin: '0 0 12px 0', color: '#334155' }}>When do you want to reach your goal?</h4>
+              <DatePicker
+                label=""
+                value={newGoal.date}
+                onChange={(date) => setNewGoal(prev => ({ ...prev, date }))}
+              />
+              <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
+                <button
+                  onClick={() => setCreationStep(2)}
+                  style={{
+                    padding: '10px 20px',
+                    border: '1px solid #d1d5db',
+                    background: 'white',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    color: '#6b7280'
+                  }}
+                >
+                  Back
+                </button>
+                <button
+                  onClick={() => setCreationStep(4)}
+                  disabled={!newGoal.date}
+                  style={{
+                    padding: '10px 20px',
+                    border: 'none',
+                    background: newGoal.date ? '#0ea5e9' : '#9ca3af',
+                    color: 'white',
+                    borderRadius: '6px',
+                    cursor: newGoal.date ? 'pointer' : 'not-allowed'
+                  }}
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Step 4: Initial Deposit */}
+          {creationStep === 4 && (
+            <div>
+              <h4 style={{ margin: '0 0 12px 0', color: '#334155' }}>Start with an initial deposit (optional)</h4>
+              <div style={{ marginBottom: '16px' }}>
+                <select
+                  value={selectedAccount}
+                  onChange={(e) => setSelectedAccount(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    border: '2px solid #e2e8f0',
+                    borderRadius: '8px',
+                    fontSize: '16px',
+                    marginBottom: '12px',
+                    boxSizing: 'border-box',
+                    color: '#1f2937',
+                    backgroundColor: 'white'
+                  }}
+                >
+                  <option value="" style={{ color: '#1f2937' }}>Select an account</option>
+                  {accounts.map(account => (
+                    <option key={account} value={account} style={{ color: '#1f2937' }}>
+                      {account} (${(accountBalances[account] || 0).toFixed(2)} available)
+                    </option>
+                  ))}
+                </select>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <span style={{ fontSize: '24px', marginRight: '8px', color: '#6b7280' }}>$</span>
+                  <input
+                    type="number"
+                    placeholder="0"
+                    value={newGoal.initialDeposit}
+                    onChange={(e) => setNewGoal(prev => ({ ...prev, initialDeposit: e.target.value }))}
+                    style={{
+                      flex: 1,
+                      padding: '12px 16px',
+                      border: '2px solid #e2e8f0',
+                      borderRadius: '8px',
+                      fontSize: '16px',
+                      boxSizing: 'border-box',
+                      color: '#1f2937',
+                      backgroundColor: 'white'
+                    }}
+                  />
+                </div>
+                {selectedAccount && (
+                  <p style={{ margin: '8px 0 0 0', fontSize: '14px', color: '#6b7280' }}>
+                    Available: ${(accountBalances[selectedAccount] || 0).toFixed(2)}
+                  </p>
+                )}
+              </div>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button
+                  onClick={() => setCreationStep(3)}
+                  style={{
+                    padding: '10px 20px',
+                    border: '1px solid #d1d5db',
+                    background: 'white',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    color: '#6b7280'
+                  }}
+                >
+                  Back
+                </button>
+                <button
+                  onClick={() => setCreationStep(5)}
+                  style={{
+                    padding: '10px 20px',
+                    border: 'none',
+                    background: '#0ea5e9',
+                    color: 'white',
+                    borderRadius: '6px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Step 5: Deposit Frequency & Review */}
+          {creationStep === 5 && (
+            <div>
+              <h4 style={{ margin: '0 0 12px 0', color: '#334155' }}>How often will you make deposits?</h4>
+              <div style={{ marginBottom: '20px' }}>
+                {['weekly', 'biweekly', 'monthly'].map(frequency => (
+                  <label key={frequency} style={{
+                    display: 'block',
+                    marginBottom: '8px',
+                    cursor: 'pointer',
+                    padding: '8px',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '6px',
+                    background: newGoal.depositFrequency === frequency ? '#f0f9ff' : 'white',
+                    color: '#1f2937',
+                    fontSize: '14px'
+                  }}>
+                    <input
+                      type="radio"
+                      name="frequency"
+                      value={frequency}
+                      checked={newGoal.depositFrequency === frequency}
+                      onChange={(e) => setNewGoal(prev => ({ ...prev, depositFrequency: e.target.value }))}
+                      style={{ marginRight: '8px' }}
+                    />
+                    {frequency.charAt(0).toUpperCase() + frequency.slice(1)}
+                  </label>
+                ))}
+              </div>
+              
+              <div style={{
+                background: '#f8fafc',
+                padding: '16px',
+                borderRadius: '8px',
+                marginBottom: '16px'
+              }}>
+                <h5 style={{ margin: '0 0 8px 0', color: '#334155' }}>Goal Summary</h5>
+                <p style={{ margin: '4px 0', fontSize: '14px', color: '#64748b' }}>
+                  <strong>Goal:</strong> {newGoal.name}
+                </p>
+                <p style={{ margin: '4px 0', fontSize: '14px', color: '#64748b' }}>
+                  <strong>Target:</strong> ${newGoal.target.toFixed(2)}
+                </p>
+                <p style={{ margin: '4px 0', fontSize: '14px', color: '#64748b' }}>
+                  <strong>Target Date:</strong> {newGoal.date}
+                </p>
+                <p style={{ margin: '4px 0', fontSize: '14px', color: '#64748b' }}>
+                  <strong>Initial Deposit:</strong> ${newGoal.initialDeposit || '0'}
+                </p>
+                <p style={{ margin: '4px 0', fontSize: '14px', color: '#64748b' }}>
+                  <strong>Deposit Frequency:</strong> {newGoal.depositFrequency}
+                </p>
+              </div>
+
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button
+                  onClick={() => setCreationStep(4)}
+                  style={{
+                    padding: '10px 20px',
+                    border: '1px solid #d1d5db',
+                    background: 'white',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    color: '#6b7280'
+                  }}
+                >
+                  Back
+                </button>
+                <button
+                  onClick={completeGoalCreation}
+                  style={{
+                    padding: '10px 20px',
+                    border: 'none',
+                    background: '#10b981',
+                    color: 'white',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontWeight: '600'
+                  }}
+                >
+                  Create Goal
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Main Goals Interface - only show if we have goals or are in edit mode */}
+      {!showEmptyState && !showGoalCreationFlow && (
+        <>
+          {/* Transfer Controls */}
+          <div style={{ 
+            display: "flex", 
+            flexDirection: "column",
         gap: 8, 
         marginBottom: 16, 
         padding: "12px", 
@@ -197,11 +761,12 @@ const SavingGoals = () => {
               border: "1px solid #d1d5db", 
               borderRadius: "6px",
               background: "white",
-              minWidth: "120px"
+              minWidth: "120px",
+              color: "#1f2937"
             }}
           >
             {accounts.map(account => (
-              <option key={account} value={account}>
+              <option key={account} value={account} style={{ color: '#1f2937' }}>
                 {account} (${(accountBalances[account] || 0).toFixed(2)})
               </option>
             ))}
@@ -222,88 +787,140 @@ const SavingGoals = () => {
               border: "1px solid #d1d5db", 
               borderRadius: "6px",
               width: "100px",
-              background: "white"
+              background: "white",
+              color: "#1f2937"
             }}
           />
           
           <span style={{ fontSize: "14px", color: "#6b7280" }}>
             Available: ${(accountBalances[selectedAccount] || 0).toFixed(2)}
           </span>
+          
+          <button
+            onClick={() => {
+              if (!transferAmount || !selectedAccount) {
+                alert('Please select an account and enter an amount to transfer');
+                return;
+              }
+              const amount = parseFloat(transferAmount);
+              if (isNaN(amount) || amount <= 0) {
+                alert('Please enter a valid transfer amount');
+                return;
+              }
+              if (goals.length === 0) {
+                alert('Please create a goal first before transferring money');
+                return;
+              }
+              // Show goal selection if multiple goals exist
+              if (goals.length === 1) {
+                handleTransfer(0);
+              } else {
+                const goalNames = goals.map((goal, idx) => `${idx + 1}. ${goal.name || `Goal ${idx + 1}`}`).join('\n');
+                const selection = prompt(`Which goal would you like to transfer to?\n\n${goalNames}\n\nEnter the goal number (1-${goals.length}):`);
+                if (selection !== null) {
+                  const goalIndex = parseInt(selection) - 1;
+                  if (!isNaN(goalIndex) && goalIndex >= 0 && goalIndex < goals.length) {
+                    handleTransfer(goalIndex);
+                  } else {
+                    alert('Invalid goal selection');
+                  }
+                }
+              }
+            }}
+            disabled={!transferAmount || !selectedAccount || parseFloat(transferAmount) <= 0 || parseFloat(transferAmount) > (accountBalances[selectedAccount] || 0)}
+            style={{
+              padding: "8px 16px",
+              border: "none",
+              borderRadius: "6px",
+              background: (!transferAmount || !selectedAccount || parseFloat(transferAmount) <= 0 || parseFloat(transferAmount) > (accountBalances[selectedAccount] || 0)) ? '#9ca3af' : '#10b981',
+              color: "white",
+              cursor: (!transferAmount || !selectedAccount || parseFloat(transferAmount) <= 0 || parseFloat(transferAmount) > (accountBalances[selectedAccount] || 0)) ? 'not-allowed' : 'pointer',
+              fontWeight: "600",
+              fontSize: "14px",
+              marginLeft: "8px"
+            }}
+          >
+            Transfer Now
+          </button>
         </div>
       </div>
 
-      {/* Goals Summary */}
-      <div style={{ 
-        display: "flex", 
-        flexDirection: "column",
-        gap: 8,
-        marginBottom: 16, 
-        padding: "12px", 
-        background: "#ecfdf5", 
-        borderRadius: "8px",
-        border: "1px solid #d1fae5"
-      }}>
+      {/* Goals Summary - only show if there are actual goals */}
+      {hasRealGoals() && (
         <div style={{ 
           display: "flex", 
           flexDirection: "column",
-          gap: 4
+          gap: 8,
+          marginBottom: 16, 
+          padding: "12px", 
+          background: "#ecfdf5", 
+          borderRadius: "8px",
+          border: "1px solid #d1fae5"
         }}>
-          <div><strong>Total Goals Progress:</strong>
-            <span style={{ marginLeft: 8, color: "#059669" }}>
-              ${goals.reduce((sum, goal) => sum + goal.current, 0).toFixed(2)} / ${goals.reduce((sum, goal) => sum + goal.target, 0).toFixed(2)}
-            </span>
-          </div>
-          <div><strong>Remaining:</strong>
-            <span style={{ marginLeft: 8, color: "#dc2626" }}>
-              ${goals.reduce((sum, goal) => sum + Math.max(0, goal.target - goal.current), 0).toFixed(2)}
-            </span>
+          <div style={{ 
+            display: "flex", 
+            flexDirection: "column",
+            gap: 4
+          }}>
+            <div><strong>Total Goals Progress:</strong>
+              <span style={{ marginLeft: 8, color: "#059669" }}>
+                ${goals.reduce((sum, goal) => sum + goal.current, 0).toFixed(2)} / ${goals.reduce((sum, goal) => sum + goal.target, 0).toFixed(2)}
+              </span>
+            </div>
+            <div><strong>Remaining:</strong>
+              <span style={{ marginLeft: 8, color: "#dc2626" }}>
+                ${goals.reduce((sum, goal) => sum + Math.max(0, goal.target - goal.current), 0).toFixed(2)}
+              </span>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
-      {/* Debug Info */}
-      <div style={{ 
-        marginBottom: 16, 
-        padding: "12px", 
-        background: "#fef3c7", 
-        borderRadius: "8px",
-        border: "1px solid #f59e0b",
-        fontSize: "12px"
-      }}>
-        <div><strong>Debug Info:</strong></div>
-        <div>Selected Account: {selectedAccount}</div>
-        <div>Account Balances: {JSON.stringify(accountBalances)}</div>
-        <div>Available Accounts: {accounts.join(', ')}</div>
-        <button 
-          onClick={() => {
-            console.log('SavingGoals - Current account balances:', accountBalances);
-            console.log('SavingGoals - Selected account:', selectedAccount);
-            console.log('SavingGoals - Available accounts:', accounts);
-            
-            // Test the event system
-            try {
-              const testBalances = { ...accountBalances };
-              testBalances[selectedAccount] = (testBalances[selectedAccount] || 0) + 0.01;
-              console.log('SavingGoals - Testing event system with:', testBalances);
-              window.dispatchEvent(new CustomEvent('bb:account-balances-updated', { detail: testBalances }));
-            } catch (error) {
-              console.error('SavingGoals - Error testing event system:', error);
-            }
-          }}
-          style={{ 
-            fontSize: '10px', 
-            padding: '2px 6px', 
-            background: '#f59e0b', 
-            color: 'white', 
-            border: 'none', 
-            borderRadius: '4px',
-            cursor: 'pointer',
-            marginTop: '4px'
-          }}
-        >
-          Test Sync
-        </button>
-      </div>
+          {/* Debug Info */}
+          {isDebugVisible && (
+            <div style={{ 
+              marginBottom: 16, 
+              padding: "12px", 
+              background: "#fef3c7", 
+              borderRadius: "8px",
+              border: "1px solid #f59e0b",
+              fontSize: "12px"
+            }}>
+              <div><strong>Debug Info:</strong></div>
+              <div>Selected Account: {selectedAccount}</div>
+              <div>Account Balances: {JSON.stringify(accountBalances)}</div>
+              <div>Available Accounts: {accounts.join(', ')}</div>
+              <button 
+                onClick={() => {
+                  console.log('SavingGoals - Current account balances:', accountBalances);
+                  console.log('SavingGoals - Selected account:', selectedAccount);
+                  console.log('SavingGoals - Available accounts:', accounts);
+                  
+                  // Test the event system
+                  try {
+                    const testBalances = { ...accountBalances };
+                    testBalances[selectedAccount] = (testBalances[selectedAccount] || 0) + 0.01;
+                    console.log('SavingGoals - Testing event system with:', testBalances);
+                    window.dispatchEvent(new CustomEvent('bb:account-balances-updated', { detail: testBalances }));
+                  } catch (error) {
+                    console.error('SavingGoals - Error testing event system:', error);
+                  }
+                }}
+                style={{ 
+                  fontSize: '10px', 
+                  padding: '2px 6px', 
+                  background: '#f59e0b', 
+                  color: 'white', 
+                  border: 'none', 
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  marginTop: '4px'
+                }}
+              >
+                Test Sync
+              </button>
+            </div>
+          )}
 
       {/* Goal Accounts Summary */}
       <div style={{ 
@@ -508,7 +1125,7 @@ const SavingGoals = () => {
             <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
               <button
                 onClick={() => addGoal(idx)}
-                title="Add goal"
+                title="Add new goal"
                 style={{ 
                   fontSize: '0.7em', 
                   padding: '2px 6px', 
@@ -523,10 +1140,27 @@ const SavingGoals = () => {
               >
                 +
               </button>
+              <button
+                onClick={() => deleteGoal(idx, goal.name || `Goal ${idx + 1}`)}
+                title="Delete this goal permanently"
+                style={{ 
+                  fontSize: '0.7em', 
+                  padding: '2px 6px', 
+                  width: 24, 
+                  height: 24,
+                  background: '#dc2626',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer'
+                }}
+              >
+                🗑️
+              </button>
               {idx > 0 && (
                 <button
                   onClick={() => removeGoal(idx)}
-                  title="Remove goal"
+                  title="Remove goal (old method)"
                   disabled={goals.length === 1}
                   style={{ 
                     fontSize: '0.7em', 
@@ -547,6 +1181,8 @@ const SavingGoals = () => {
           </div>
         );
       })}
+        </>
+      )}
     </div>
   );
 };
