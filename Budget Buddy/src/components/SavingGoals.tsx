@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import DatePicker from "./DatePicker";
+import { useDebug } from "../contexts/DebugContext";
 
 interface Goal {
   name: string;
@@ -12,6 +13,7 @@ interface Goal {
 }
 
 const SavingGoals = () => {
+  const { isDebugVisible } = useDebug();
   const [goals, setGoals] = useState<Goal[]>([
     { name: "", target: 0, current: 0, date: "" },
   ]);

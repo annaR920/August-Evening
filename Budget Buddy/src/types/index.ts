@@ -30,3 +30,12 @@ export interface CategoryTotal {
   amount: number;
 }
 
+export interface Transaction {
+  id: string;
+  date: string;
+  account: string;
+  category: string;
+  payee: string;
+  amount: number;
+}
+
