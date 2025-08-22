@@ -4,7 +4,7 @@ const Header: React.FC = () => {
   return (
     <header style={{
       textAlign: 'center',
-      marginBottom: '32px',
+      marginBottom: '12px',
       padding: '20px',
       backgroundColor: '#1F2937',
       borderRadius: '16px',
@@ -12,7 +12,7 @@ const Header: React.FC = () => {
       boxShadow: '0 8px 32px rgba(0,0,0,0.3)'
     }}>
       <h1 style={{
-        margin: 0,
+        margin: '0px',
         fontSize: '3.5em',
         fontWeight: 800,
         color: '#F9FAFB',
