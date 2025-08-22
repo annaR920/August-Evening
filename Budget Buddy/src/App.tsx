@@ -15,12 +15,11 @@ import React from "react";
 
 import type { Transaction } from "./components/transactions/TransactionRow";
 import CreditsPage from "./components/CreditsPage";
-import { DebugProvider, useDebug } from "./contexts/DebugContext";
+import { DebugProvider } from "./contexts/DebugContext";
 import DebugToggle from "./components/DebugToggle";
 
 // Dashboard component with all the budget functionality
 function Dashboard() {
-  const { isDebugVisible } = useDebug();
   const [txVersion, setTxVersion] = useState(0);
   const [userName, setUserName] = React.useState<string>(() => localStorage.getItem('budgetBuddyUserName') || "");
   const [route, setRoute] = useState<'main' | 'profile'>('main');

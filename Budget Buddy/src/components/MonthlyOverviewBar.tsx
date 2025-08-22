@@ -1,6 +1,6 @@
 
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import "./MonthlyOverviewBar.css";
 
 interface MonthlyOverviewBarProps {
@@ -10,14 +10,10 @@ interface MonthlyOverviewBarProps {
 
 
 
-const MonthlyOverviewBar: React.FC<MonthlyOverviewBarProps> = ({ monthlyExpenseTotal }) => {
-  const [maxBudget, setMaxBudget] = useState<number>(0);
-
-  useEffect(() => {
-    const stored = localStorage.getItem("budgetBuddyTotalIncome");
-    setMaxBudget(stored ? Number(stored) : 0);
-  }, []);
-
+const MonthlyOverviewBar: React.FC<MonthlyOverviewBarProps> = ({ monthlyExpenseTotal, monthlyIncomeTotal }) => {
+  // Use actual monthly income as max budget instead of broken localStorage
+  const maxBudget = monthlyIncomeTotal || 0;
+  
   const percent = maxBudget > 0 ? Math.min((monthlyExpenseTotal / maxBudget) * 100, 100) : 0;
 
   return (
