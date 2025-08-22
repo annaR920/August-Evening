@@ -196,11 +196,11 @@ const SavingGoals = () => {
   const addGoal = (index?: number) => {
     const newGoal = { name: "", target: 0, current: 0, date: "" };
     if (typeof index === 'number') {
-      setGoals(goals => [
-        ...goals.slice(0, index + 1),
+    setGoals(goals => [
+      ...goals.slice(0, index + 1),
         newGoal,
-        ...goals.slice(index + 1),
-      ]);
+      ...goals.slice(index + 1),
+    ]);
     } else {
       setGoals(goals => [...goals, newGoal]);
     }
@@ -794,10 +794,10 @@ const SavingGoals = () => {
       {/* Main Goals Interface - only show if we have goals or are in edit mode */}
       {!showEmptyState && !showGoalCreationFlow && (
         <>
-          {/* Transfer Controls */}
-          <div style={{ 
-            display: "flex", 
-            flexDirection: "column",
+      {/* Transfer Controls */}
+      <div style={{ 
+        display: "flex", 
+        flexDirection: "column",
         gap: 8, 
         marginBottom: 16, 
         padding: "12px", 
@@ -907,79 +907,79 @@ const SavingGoals = () => {
 
       {/* Goals Summary - only show if there are actual goals */}
       {hasRealGoals() && (
+      <div style={{ 
+        display: "flex", 
+        flexDirection: "column",
+        gap: 8,
+        marginBottom: 16, 
+        padding: "12px", 
+        background: "#ecfdf5", 
+        borderRadius: "8px",
+        border: "1px solid #d1fae5"
+      }}>
         <div style={{ 
           display: "flex", 
           flexDirection: "column",
-          gap: 8,
-          marginBottom: 16, 
-          padding: "12px", 
-          background: "#ecfdf5", 
-          borderRadius: "8px",
-          border: "1px solid #d1fae5"
+          gap: 4
         }}>
-          <div style={{ 
-            display: "flex", 
-            flexDirection: "column",
-            gap: 4
-          }}>
-            <div><strong>Total Goals Progress:</strong>
-              <span style={{ marginLeft: 8, color: "#059669" }}>
-                ${goals.reduce((sum, goal) => sum + goal.current, 0).toFixed(2)} / ${goals.reduce((sum, goal) => sum + goal.target, 0).toFixed(2)}
-              </span>
-            </div>
-            <div><strong>Remaining:</strong>
-              <span style={{ marginLeft: 8, color: "#dc2626" }}>
-                ${goals.reduce((sum, goal) => sum + Math.max(0, goal.target - goal.current), 0).toFixed(2)}
-              </span>
-            </div>
+          <div><strong>Total Goals Progress:</strong>
+            <span style={{ marginLeft: 8, color: "#059669" }}>
+              ${goals.reduce((sum, goal) => sum + goal.current, 0).toFixed(2)} / ${goals.reduce((sum, goal) => sum + goal.target, 0).toFixed(2)}
+            </span>
+          </div>
+          <div><strong>Remaining:</strong>
+            <span style={{ marginLeft: 8, color: "#dc2626" }}>
+              ${goals.reduce((sum, goal) => sum + Math.max(0, goal.target - goal.current), 0).toFixed(2)}
+            </span>
           </div>
         </div>
+      </div>
       )}
 
-          {/* Debug Info */}
+      {/* Debug Info */}
           {isDebugVisible && (
-            <div style={{ 
-              marginBottom: 16, 
-              padding: "12px", 
-              background: "#fef3c7", 
-              borderRadius: "8px",
-              border: "1px solid #f59e0b",
-              fontSize: "12px"
-            }}>
-              <div><strong>Debug Info:</strong></div>
-              <div>Selected Account: {selectedAccount}</div>
-              <div>Account Balances: {JSON.stringify(accountBalances)}</div>
-              <div>Available Accounts: {accounts.join(', ')}</div>
-              <button 
-                onClick={() => {
-                  console.log('SavingGoals - Current account balances:', accountBalances);
-                  console.log('SavingGoals - Selected account:', selectedAccount);
-                  console.log('SavingGoals - Available accounts:', accounts);
-                  
-                  // Test the event system
-                  try {
-                    const testBalances = { ...accountBalances };
-                    testBalances[selectedAccount] = (testBalances[selectedAccount] || 0) + 0.01;
-                    console.log('SavingGoals - Testing event system with:', testBalances);
-                    window.dispatchEvent(new CustomEvent('bb:account-balances-updated', { detail: testBalances }));
-                  } catch (error) {
-                    console.error('SavingGoals - Error testing event system:', error);
-                  }
-                }}
-                style={{ 
-                  fontSize: '10px', 
-                  padding: '2px 6px', 
-                  background: '#f59e0b', 
-                  color: 'white', 
-                  border: 'none', 
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                  marginTop: '4px'
-                }}
-              >
-                Test Sync
-              </button>
-            </div>
+      <div style={{ 
+        marginBottom: 16, 
+        padding: "12px", 
+        background: "#fef3c7", 
+        borderRadius: "8px",
+        border: "1px solid #f59e0b",
+        fontSize: "12px"
+      }}>
+        <div><strong>Debug Info:</strong></div>
+        <div>Selected Account: {selectedAccount}</div>
+        <div>Account Balances: {JSON.stringify(accountBalances)}</div>
+        <div>Available Accounts: {accounts.join(', ')}</div>
+        <button 
+          onClick={() => {
+            console.log('SavingGoals - Current account balances:', accountBalances);
+            console.log('SavingGoals - Selected account:', selectedAccount);
+            console.log('SavingGoals - Available accounts:', accounts);
+            
+            // Test the event system
+            try {
+              const testBalances = { ...accountBalances };
+              testBalances[selectedAccount] = (testBalances[selectedAccount] || 0) + 0.01;
+              console.log('SavingGoals - Testing event system with:', testBalances);
+              window.dispatchEvent(new CustomEvent('bb:account-balances-updated', { detail: testBalances }));
+            } catch (error) {
+              console.error('SavingGoals - Error testing event system:', error);
+            }
+          }}
+          style={{ 
+            fontSize: '10px', 
+            padding: '2px 6px', 
+            background: '#f59e0b', 
+            color: 'white', 
+            border: 'none', 
+            borderRadius: '4px',
+            cursor: 'pointer',
+            marginTop: '4px'
+          }}
+        >
+          Test Sync
+        </button>
+      </div>
           )}
 
       {/* Goal Accounts Summary */}
