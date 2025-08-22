@@ -15,6 +15,17 @@ interface Goal {
 const SavingGoals = () => {
   const { isDebugVisible } = useDebug();
   const [goals, setGoals] = useState<Goal[]>([]);
+  
+  // Goals section visibility state
+  const [isGoalsSectionVisible, setIsGoalsSectionVisible] = useState<boolean>(() => {
+    try {
+      const stored = localStorage.getItem('bb_goals_section_visible');
+      return stored ? JSON.parse(stored) : true; // Default to visible
+    } catch (error) {
+      console.error("Failed to read goals visibility from localStorage", error);
+      return true;
+    }
+  });
 
   // Goal creation flow state
   const [showGoalCreationFlow, setShowGoalCreationFlow] = useState(false);
@@ -33,6 +44,15 @@ const SavingGoals = () => {
   const [accounts, setAccounts] = useState<string[]>([]);
   const [transferAmount, setTransferAmount] = useState<string>("");
   const [selectedAccount, setSelectedAccount] = useState<string>("");
+
+  // Save goals section visibility to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('bb_goals_section_visible', JSON.stringify(isGoalsSectionVisible));
+    } catch (error) {
+      console.error("Failed to save goals visibility to localStorage", error);
+    }
+  }, [isGoalsSectionVisible]);
 
   // Load account balances and accounts from localStorage
   useEffect(() => {
@@ -166,6 +186,11 @@ const SavingGoals = () => {
     return goals.some(goal => 
       goal.name.trim() !== "" || goal.target > 0 || goal.current > 0
     );
+  };
+
+  // Toggle goals section visibility
+  const toggleGoalsVisibility = () => {
+    setIsGoalsSectionVisible(prev => !prev);
   };
 
   const addGoal = (index?: number) => {
@@ -305,7 +330,42 @@ const SavingGoals = () => {
       boxSizing: "border-box",
       overflow: "hidden"
     }}>
-      <h2 style={{ marginBottom: "24px", fontSize: "1.5rem", textAlign: "left" }}>Saving Goals</h2>
+      {/* Goals Section Header with Toggle */}
+      <div style={{ 
+        display: "flex", 
+        justifyContent: "space-between", 
+        alignItems: "center", 
+        marginBottom: "24px" 
+      }}>
+        <h2 style={{ margin: "0", fontSize: "1.5rem", textAlign: "left" }}>Saving Goals</h2>
+        <button
+          onClick={toggleGoalsVisibility}
+          style={{
+            padding: "8px 16px",
+            border: "1px solid #d1d5db",
+            background: isGoalsSectionVisible ? "#f3f4f6" : "#e5e7eb",
+            borderRadius: "6px",
+            cursor: "pointer",
+            fontSize: "14px",
+            fontWeight: "500",
+            color: "#374151",
+            transition: "all 0.2s ease"
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = isGoalsSectionVisible ? "#e5e7eb" : "#d1d5db";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = isGoalsSectionVisible ? "#f3f4f6" : "#e5e7eb";
+          }}
+          title={isGoalsSectionVisible ? "Hide goals section" : "Show goals section"}
+        >
+          {isGoalsSectionVisible ? "Hide Goals" : "Show Goals"}
+        </button>
+      </div>
+
+      {/* Goals Section Content - conditionally visible */}
+      {isGoalsSectionVisible && (
+        <div>
 
       {/* Empty State */}
       {showEmptyState && (
@@ -1182,6 +1242,8 @@ const SavingGoals = () => {
         );
       })}
         </>
+      )}
+        </div>
       )}
     </div>
   );
