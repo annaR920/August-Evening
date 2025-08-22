@@ -90,7 +90,7 @@ const SpendingByCategoryPie: React.FC<SpendingByCategoryPieProps> = ({
                     fontSize={10}
                     textAnchor="middle"
                     dominantBaseline="middle"
-                    fill="#111827"
+                    fill="#00bcd4"
                     style={{ pointerEvents: 'none' }}
                   >
                     {String(slice.category)} {percent}
@@ -112,7 +112,7 @@ const SpendingByCategoryPie: React.FC<SpendingByCategoryPieProps> = ({
           dominantBaseline="middle"
           fontSize={18}
           fontWeight="bold"
-          fill={typeof centerValue === 'number' && centerValue < 0 ? '#DC2626' : '#111827'}
+          fill={typeof centerValue === 'number' && centerValue < 0 ? '#DC2626' : '#00bcd4'}
         >
           {typeof centerValue === 'number'
             ? `$${centerValue.toFixed(0)}`
@@ -157,8 +157,8 @@ const SpendingByCategoryPie: React.FC<SpendingByCategoryPieProps> = ({
                   background: colorForIndex(index),
                 }}
               />
-              <span style={{ color: '#111827', fontWeight: 600 }}>{categoryLabel}</span>
-              <span style={{ color: "#6B7280", fontWeight: 600 }}>{percent.toFixed(1)}%</span>
+              <span style={{ color: '#00bcd4', fontWeight: 600 }}>{categoryLabel}</span>
+              <span style={{ color: "#00bcd4", fontWeight: 600 }}>{percent.toFixed(1)}%</span>
             </div>
           );
         })}
