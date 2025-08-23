@@ -313,10 +313,10 @@ const FixedExpenses: React.FC = () => {
     <Card className="p-6 space-y-6 bg-slate-900 text-slate-100">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-purple-300">Fixed Expenses</h2>
+        <h2 className="text-2xl font-bold text-teal-400">Fixed Expenses</h2>
         <Button
           variant="outline"
-          className="border-purple-500 text-purple-300 hover:bg-purple-600 hover:text-white"
+          className="border-teal-500 text-teal-300 hover:bg-teal-600 hover:text-purple-100"
           onClick={() => setIsExpanded((v) => !v)}
         >
           {isExpanded ? "Hide" : "Show"} Transactions
