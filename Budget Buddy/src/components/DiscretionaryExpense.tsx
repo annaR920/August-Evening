@@ -1,149 +1,211 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import TransactionRow, { type Transaction } from './transactions/TransactionRow';
+import React, { useEffect, useMemo, useState } from "react";
+import TransactionRow, {
+  type Transaction,
+} from "./transactions/TransactionRow";
 
-import { useLocalStorageList } from './expenses/useLocalStorageList';
-import { useDebug } from '../contexts/DebugContext';
-import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { useLocalStorageList } from "./expenses/useLocalStorageList";
+import { useDebug } from "../contexts/DebugContext";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectTrigger,
   SelectContent,
   SelectItem,
   SelectValue,
-} from "@/components/ui/select"
+} from "@/components/ui/select";
 
 const DiscretionaryExpense: React.FC = () => {
   const { isDebugVisible } = useDebug();
-  const [categories, setCategories] = useLocalStorageList('bb_expense_categories', [
-    "Housing",
-    "Utilities", 
-    "Transportation",
-    "Food & Dining",
-    "Healthcare",
-    "Insurance",
-    "Debt Payments",
-    "Entertainment",
-    "Shopping",
-    "Education",
-    "Gifts & Donations",
-    "Personal Care",
-    "Subscriptions",
-    "Other"
-  ]);
-  const [accounts, setAccounts] = useLocalStorageList('bb_accounts', [
-    "Checking", 
-    "Savings", 
+  const [categories, setCategories] = useLocalStorageList(
+    "bb_expense_categories",
+    [
+      "Housing",
+      "Utilities",
+      "Transportation",
+      "Food & Dining",
+      "Healthcare",
+      "Insurance",
+      "Debt Payments",
+      "Entertainment",
+      "Shopping",
+      "Education",
+      "Gifts & Donations",
+      "Personal Care",
+      "Subscriptions",
+      "Other",
+    ]
+  );
+  const [accounts, setAccounts] = useLocalStorageList("bb_accounts", [
+    "Checking",
+    "Savings",
     "Credit Card",
     "Investment Account",
     "Emergency Fund",
-    "Business Account"
+    "Business Account",
   ]);
 
   const [showAddCategory, setShowAddCategory] = useState(false);
-  const [newCategory, setNewCategory] = useState('');
-  const [pendingRowForCategory, setPendingRowForCategory] = useState<string | null>(null);
+  const [newCategory, setNewCategory] = useState("");
+  const [pendingRowForCategory, setPendingRowForCategory] = useState<
+    string | null
+  >(null);
 
   const [showAddAccount, setShowAddAccount] = useState(false);
-  const [newAccount, setNewAccount] = useState('');
-  const [pendingRowForAccount, setPendingRowForAccount] = useState<string | null>(null);
+  const [newAccount, setNewAccount] = useState("");
+  const [pendingRowForAccount, setPendingRowForAccount] = useState<
+    string | null
+  >(null);
 
   // Per-account starting balances (shared key across app)
-  const [accountBalances, setAccountBalances] = useState<Record<string, number>>({});
-  const [selectedBalanceAccount, setSelectedBalanceAccount] = useState<string>('Checking');
+  const [accountBalances, setAccountBalances] = useState<
+    Record<string, number>
+  >({});
+  const [selectedBalanceAccount, setSelectedBalanceAccount] =
+    useState<string>("Checking");
   const [balanceInput, setBalanceInput] = useState<Record<string, string>>({});
 
   useEffect(() => {
     try {
-      const stored = localStorage.getItem('bb_account_balances');
+      const stored = localStorage.getItem("bb_account_balances");
       if (stored) {
         const parsed = JSON.parse(stored);
-        if (parsed && typeof parsed === 'object') {
-          console.log('DiscretionaryExpenses - Loaded stored account balances:', parsed);
+        if (parsed && typeof parsed === "object") {
+          console.log(
+            "DiscretionaryExpenses - Loaded stored account balances:",
+            parsed
+          );
           setAccountBalances(parsed);
         }
       } else {
-        console.log('DiscretionaryExpenses - No stored account balances found, starting with empty balances');
+        console.log(
+          "DiscretionaryExpenses - No stored account balances found, starting with empty balances"
+        );
         setAccountBalances({});
       }
     } catch (error) {
-      console.error('DiscretionaryExpenses - Error loading account balances:', error);
+      console.error(
+        "DiscretionaryExpenses - Error loading account balances:",
+        error
+      );
       setAccountBalances({});
     }
-    
+
     const updateAccountBalancesFromIncome = () => {
       try {
-        const incomeTransactions = JSON.parse(localStorage.getItem('bb_tx_income') || '[]');
-        console.log('DiscretionaryExpenses - Income transactions found:', incomeTransactions);
-        
+        const incomeTransactions = JSON.parse(
+          localStorage.getItem("bb_tx_income") || "[]"
+        );
+        console.log(
+          "DiscretionaryExpenses - Income transactions found:",
+          incomeTransactions
+        );
+
         // Only update if we have income transactions and no existing balances
         if (incomeTransactions.length > 0) {
-          setAccountBalances(prevBalances => {
+          setAccountBalances((prevBalances) => {
             // If we already have balances, don't add income again
             if (Object.keys(prevBalances).length > 0) {
-              console.log('DiscretionaryExpenses - Account balances already exist, skipping income addition');
+              console.log(
+                "DiscretionaryExpenses - Account balances already exist, skipping income addition"
+              );
               return prevBalances;
             }
-            
+
             const newBalances = { ...prevBalances };
-            
+
             // Add income to the specified accounts (only once)
             incomeTransactions.forEach((income: any) => {
               if (income.account && income.amount) {
                 const account = income.account;
                 const amount = Number(income.amount) || 0;
-                console.log(`DiscretionaryExpenses - Adding ${amount} to ${account} account`);
+                console.log(
+                  `DiscretionaryExpenses - Adding ${amount} to ${account} account`
+                );
                 newBalances[account] = (newBalances[account] || 0) + amount;
               }
             });
-            
-            console.log('DiscretionaryExpenses - Updated account balances:', newBalances);
+
+            console.log(
+              "DiscretionaryExpenses - Updated account balances:",
+              newBalances
+            );
             return newBalances;
           });
         }
       } catch (error) {
-        console.error('DiscretionaryExpenses - Error updating account balances from income:', error);
+        console.error(
+          "DiscretionaryExpenses - Error updating account balances from income:",
+          error
+        );
       }
     };
-    
+
     // Update balances when income changes
     const onIncome = () => updateAccountBalancesFromIncome();
-    window.addEventListener('bb:income-updated', onIncome);
-    
+    window.addEventListener("bb:income-updated", onIncome);
+
     // Listen for account balance updates from other components
     const onAccountBalancesUpdated = (event: CustomEvent) => {
-      console.log('DiscretionaryExpenses - Received account balance update from other component:', event.detail);
+      console.log(
+        "DiscretionaryExpenses - Received account balance update from other component:",
+        event.detail
+      );
       setAccountBalances(event.detail);
     };
-    window.addEventListener('bb:account-balances-updated', onAccountBalancesUpdated as EventListener);
-    
+    window.addEventListener(
+      "bb:account-balances-updated",
+      onAccountBalancesUpdated as EventListener
+    );
+
     // Initial update
     updateAccountBalancesFromIncome();
-    
+
     return () => {
-      window.removeEventListener('bb:income-updated', onIncome);
-      window.removeEventListener('bb:account-balances-updated', onAccountBalancesUpdated as EventListener);
+      window.removeEventListener("bb:income-updated", onIncome);
+      window.removeEventListener(
+        "bb:account-balances-updated",
+        onAccountBalancesUpdated as EventListener
+      );
     };
   }, []); // Remove accountBalances dependency to prevent infinite loops
 
   useEffect(() => {
-    try { localStorage.setItem('bb_account_balances', JSON.stringify(accountBalances)); } catch {}
-    
+    try {
+      localStorage.setItem(
+        "bb_account_balances",
+        JSON.stringify(accountBalances)
+      );
+    } catch {}
+
     // Notify other components that account balances have changed
-    try { window.dispatchEvent(new CustomEvent('bb:account-balances-updated', { detail: accountBalances })); } catch {}
+    try {
+      window.dispatchEvent(
+        new CustomEvent("bb:account-balances-updated", {
+          detail: accountBalances,
+        })
+      );
+    } catch {}
   }, [accountBalances]);
 
   useEffect(() => {
     if (!selectedBalanceAccount || !accounts.includes(selectedBalanceAccount)) {
-      setSelectedBalanceAccount(accounts.includes('Checking') ? 'Checking' : (accounts[0] ?? ''));
+      setSelectedBalanceAccount(
+        accounts.includes("Checking") ? "Checking" : accounts[0] ?? ""
+      );
     }
   }, [accounts, selectedBalanceAccount]);
 
   useEffect(() => {
-    const balanceValue = String(accountBalances[selectedBalanceAccount] ?? '');
-    console.log(`DiscretionaryExpenses - Syncing balance input for ${selectedBalanceAccount}:`, balanceValue, 'from accountBalances:', accountBalances);
-    setBalanceInput(prev => ({
+    const balanceValue = String(accountBalances[selectedBalanceAccount] ?? "");
+    console.log(
+      `DiscretionaryExpenses - Syncing balance input for ${selectedBalanceAccount}:`,
+      balanceValue,
+      "from accountBalances:",
+      accountBalances
+    );
+    setBalanceInput((prev) => ({
       ...prev,
       [selectedBalanceAccount]: balanceValue,
     }));
@@ -155,69 +217,81 @@ const DiscretionaryExpense: React.FC = () => {
   useEffect(() => {
     if (categories.length > 0 && accounts.length > 0) {
       try {
-        const stored = localStorage.getItem('bb_tx_discretionary');
+        const stored = localStorage.getItem("bb_tx_discretionary");
         if (stored) {
           const parsed = JSON.parse(stored);
           if (Array.isArray(parsed) && parsed.length > 0) {
             // Ensure each row has a valid date and account
-            const rowsWithDates = parsed.map(row => ({
+            const rowsWithDates = parsed.map((row) => ({
               ...row,
-              date: row.date || new Date().toISOString().split('T')[0],
-              account: row.account || accounts[0] || 'Checking'
+              date: row.date || new Date().toISOString().split("T")[0],
+              account: row.account || accounts[0] || "Checking",
             }));
             setRows(rowsWithDates);
           } else {
             // No stored rows, create initial row
-            setRows([{
-              id: 'dx-1',
-              date: new Date().toISOString().split('T')[0],
-              account: accounts[0] || 'Checking', // Use first available account
-              category: categories[0], // Use first category
-              payee: '',
-              amount: 0,
-            }]);
+            setRows([
+              {
+                id: "dx-1",
+                date: new Date().toISOString().split("T")[0],
+                account: accounts[0] || "Checking", // Use first available account
+                category: categories[0], // Use first category
+                payee: "",
+                amount: 0,
+              },
+            ]);
           }
         } else {
           // No stored data, create initial row
-          setRows([{
-            id: 'dx-1',
-            date: new Date().toISOString().split('T')[0],
-            account: accounts[0] || 'Checking', // Use first available account
-            category: categories[0], // Use first category
-            payee: '',
-            amount: 0,
-          }]);
+          setRows([
+            {
+              id: "dx-1",
+              date: new Date().toISOString().split("T")[0],
+              account: accounts[0] || "Checking", // Use first available account
+              category: categories[0], // Use first category
+              payee: "",
+              amount: 0,
+            },
+          ]);
         }
       } catch {
         // Error loading from localStorage, create initial row
-        setRows([{
-          id: 'dx-1',
-          date: new Date().toISOString().split('T')[0],
-          account: accounts[0] || 'Checking', // Use first available account
-          category: categories[0], // Use first category
-          payee: '',
-          amount: 0,
-        }]);
+        setRows([
+          {
+            id: "dx-1",
+            date: new Date().toISOString().split("T")[0],
+            account: accounts[0] || "Checking", // Use first available account
+            category: categories[0], // Use first category
+            payee: "",
+            amount: 0,
+          },
+        ]);
       }
     }
   }, [categories, accounts]);
 
   // persist rows and notify listeners
   useEffect(() => {
-    try { localStorage.setItem('bb_tx_discretionary', JSON.stringify(rows)); } catch {}
-    try { window.dispatchEvent(new Event('bb:transactions-updated')); } catch {}
+    try {
+      localStorage.setItem("bb_tx_discretionary", JSON.stringify(rows));
+    } catch {}
+    try {
+      window.dispatchEvent(new Event("bb:transactions-updated"));
+    } catch {}
   }, [rows]);
 
   const payeeSuggestions = useMemo(() => {
     const set = new Set<string>();
-    rows.forEach(r => { if (r.payee?.trim()) set.add(r.payee.trim()); });
+    rows.forEach((r) => {
+      if (r.payee?.trim()) set.add(r.payee.trim());
+    });
     return Array.from(set).slice(-25);
   }, [rows]);
 
   const runningBalances = useMemo(() => {
     const map = new Map<string, number>();
-    accounts.forEach(a => map.set(a, Number(accountBalances[a] ?? 0)));
-    return rows.map(r => {
+    accounts.forEach((a) => map.set(a, Number(accountBalances[a] ?? 0)));
+    return rows.map((r) => {
       const prev = map.get(r.account) ?? 0;
       const next = prev - (Number(r.amount) || 0);
       map.set(r.account, next);
@@ -230,10 +304,14 @@ const DiscretionaryExpense: React.FC = () => {
     if (!c || categories.includes(c)) return;
     setCategories([...categories, c]);
     if (pendingRowForCategory) {
-      setRows(prev => prev.map(r => r.id === pendingRowForCategory ? { ...r, category: c } : r));
+      setRows((prev) =>
+        prev.map((r) =>
+          r.id === pendingRowForCategory ? { ...r, category: c } : r
+        )
+      );
       setPendingRowForCategory(null);
     }
-    setNewCategory('');
+    setNewCategory("");
     setShowAddCategory(false);
   };
 
@@ -241,78 +319,105 @@ const DiscretionaryExpense: React.FC = () => {
     const a = newAccount.trim();
     if (!a || accounts.includes(a)) return;
     setAccounts([...accounts, a]);
-    setAccountBalances(prev => ({ ...prev, [a]: prev[a] ?? 0 }));
+    setAccountBalances((prev) => ({ ...prev, [a]: prev[a] ?? 0 }));
     if (pendingRowForAccount) {
-      setRows(prev => prev.map(r => r.id === pendingRowForAccount ? { ...r, account: a } : r));
+      setRows((prev) =>
+        prev.map((r) =>
+          r.id === pendingRowForAccount ? { ...r, account: a } : r
+        )
+      );
       setPendingRowForAccount(null);
     }
-    setNewAccount('');
+    setNewAccount("");
     setShowAddAccount(false);
   };
 
   const removeCategory = (name: string) => {
     if (!name) return;
     if (categories.length <= 1) return;
-    if (rows.some(r => r.category === name)) return;
-    setCategories(categories.filter(c => c !== name));
+    if (rows.some((r) => r.category === name)) return;
+    setCategories(categories.filter((c) => c !== name));
   };
 
   const removeAccount = (name: string) => {
     if (!name) return;
     if (accounts.length <= 1) return;
-    if (rows.some(r => r.account === name)) return;
-    setAccounts(accounts.filter(a => a !== name));
-    setAccountBalances(prev => {
+    if (rows.some((r) => r.account === name)) return;
+    setAccounts(accounts.filter((a) => a !== name));
+    setAccountBalances((prev) => {
       const { [name]: _, ...rest } = prev;
       return rest;
     });
   };
 
   const handleChange = (id: string, patch: Partial<Transaction>) => {
-    setRows(prev => prev.map(r => r.id === id ? { ...r, ...patch } : r));
+    setRows((prev) => prev.map((r) => (r.id === id ? { ...r, ...patch } : r)));
   };
 
   const handleAdd = (afterId?: string) => {
     if (afterId) {
-      const row = rows.find(r => r.id === afterId);
+      const row = rows.find((r) => r.id === afterId);
       if (row && row.account) {
-        setAccountBalances(prev => ({
+        setAccountBalances((prev) => ({
           ...prev,
-          [row.account]: (Number(prev[row.account] ?? 0)) - (Number(row.amount) || 0),
+          [row.account]:
+            Number(prev[row.account] ?? 0) - (Number(row.amount) || 0),
         }));
       }
     }
-    setRows(prev => ([...prev, {
-      id: `dx-${Date.now()}`,
-      date: new Date().toISOString().split('T')[0],
-      account: accounts[0] || 'Checking', // Use first available account
-      category: categories[0] || 'Housing', // Use first category or fallback to Housing
-      payee: '',
-      amount: 0,
-    }]));
+    setRows((prev) => [
+      ...prev,
+      {
+        id: `dx-${Date.now()}`,
+        date: new Date().toISOString().split("T")[0],
+        account: accounts[0] || "Checking", // Use first available account
+        category: categories[0] || "Housing", // Use first category or fallback to Housing
+        payee: "",
+        amount: 0,
+      },
+    ]);
   };
 
   const handleRemove = (id: string) => {
-    setRows(prev => prev.length > 1 ? prev.filter(r => r.id !== id) : prev);
+    setRows((prev) =>
+      prev.length > 1 ? prev.filter((r) => r.id !== id) : prev
+    );
   };
 
   const [isExpanded, setIsExpanded] = useState(true);
 
   // Debug logging
-  console.log('DiscretionaryExpenses render - rows:', rows, 'isExpanded:', isExpanded, 'categories:', categories, 'accounts:', accounts);
-  console.log('DiscretionaryExpenses - Current account balances:', accountBalances);
-  console.log('DiscretionaryExpenses - Selected balance account:', selectedBalanceAccount);
+  console.log(
+    "DiscretionaryExpenses render - rows:",
+    rows,
+    "isExpanded:",
+    isExpanded,
+    "categories:",
+    categories,
+    "accounts:",
+    accounts
+  );
+  console.log(
+    "DiscretionaryExpenses - Current account balances:",
+    accountBalances
+  );
+  console.log(
+    "DiscretionaryExpenses - Selected balance account:",
+    selectedBalanceAccount
+  );
 
   return (
-    <Card className="p-6 space-y-4 bg-slate-900 text-slate-100 border-slate-700 rounded-2xl">
+    <Card className="p-6 space-y-6 bg-slate-900 text-slate-100">
       {/* Header */}
       <div className="flex items-center justify-between mb-2">
-        <h2 className="m-0 text-xl font-bold text-teal-400">Discretionary Expenses</h2>
+        <h2 className="m-0 text-xl font-bold text-teal-400">
+          Discretionary Expenses
+        </h2>
         <Button
           variant="outline"
           size="sm"
           onClick={() => setIsExpanded((v) => !v)}
-          className="border-slate-600 text-slate-200 hover:bg-purple-600/20 hover:text-slate-100"
+          className="border-teal-500 text-teal-300 hover:bg-teal-600 hover:text-purple-100"
         >
           {isExpanded ? "Hide" : "Show"} Transactions
         </Button>
@@ -481,7 +586,9 @@ const DiscretionaryExpense: React.FC = () => {
         <div className="flex flex-wrap gap-3 mb-4">
           {showAddCategory && (
             <Card className="flex items-center gap-2 p-3 bg-slate-800 border-slate-700 rounded-xl">
-              <span className="font-semibold text-slate-200">New category:</span>
+              <span className="font-semibold text-slate-200">
+                New category:
+              </span>
               <Input
                 type="text"
                 value={newCategory}
