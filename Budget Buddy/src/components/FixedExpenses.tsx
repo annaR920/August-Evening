@@ -3,7 +3,13 @@ import TransactionRow, { type Transaction } from './transactions/TransactionRow'
 
 import { useLocalStorageList } from './expenses/useLocalStorageList';
 import { useDebug } from '../contexts/DebugContext';
-
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { ChevronDown, ChevronUp, Plus, X, RefreshCw, RotateCcw, Zap, Trash2 } from 'lucide-react';
 const FixedExpenses: React.FC = () => {
   const { isDebugVisible } = useDebug();
   const [categories, setCategories] = useLocalStorageList('bb_expense_categories', [
@@ -304,209 +310,266 @@ const FixedExpenses: React.FC = () => {
   console.log('Selected balance account:', selectedBalanceAccount);
 
   return (
-    <div>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-        <h2 style={{ margin: 0 }}>Fixed Expenses</h2>
-        <button
-          onClick={() => setIsExpanded(v => !v)}
-          style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #e5e7eb', background: '#fff', color: '#1f2937', fontWeight: '500' }}
+    <Card className="p-6 space-y-6 bg-slate-900 text-slate-100">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-purple-300">Fixed Expenses</h2>
+        <Button
+          variant="outline"
+          className="border-purple-500 text-purple-300 hover:bg-purple-600 hover:text-white"
+          onClick={() => setIsExpanded((v) => !v)}
         >
-          {isExpanded ? 'Hide' : 'Show'} Transactions
-        </button>
+          {isExpanded ? "Hide" : "Show"} Transactions
+        </Button>
       </div>
 
-      {/* Account balance editor */}
+      {/* Account Balance editor */}
       {accounts.length > 0 && (
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 12, flexWrap: 'wrap' }}>
-          <strong>Account Balance:</strong>
-          <select
-            value={selectedBalanceAccount || ''}
-            onChange={(e) => setSelectedBalanceAccount(e.target.value)}
-            style={{ padding: '6px 10px', border: '1px solid #ced4da', borderRadius: 6, color: '#1f2937', backgroundColor: 'white' }}
+        <div className="flex flex-wrap items-center gap-4">
+          <span className="font-semibold">Account Balance:</span>
+
+          <Select
+            value={selectedBalanceAccount || ""}
+            onValueChange={(val) => setSelectedBalanceAccount(val)}
           >
-            {accounts.map(a => (
-              <option key={a} value={a} style={{ color: '#1f2937' }}>{a}</option>
-            ))}
-          </select>
-          <input
+            <SelectTrigger className="w-[180px] bg-slate-800 border-slate-600 text-slate-100">
+              <SelectValue placeholder="Select account" />
+            </SelectTrigger>
+            <SelectContent>
+              {accounts.map((a) => (
+                <SelectItem key={a} value={a}>
+                  {a}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Input
             type="text"
-            value={balanceInput[selectedBalanceAccount] ?? ''}
+            value={balanceInput[selectedBalanceAccount] ?? ""}
             onChange={(e) => {
               const raw = e.target.value;
-              // allow only -, digits, optional dot
               const valid = /^-?\d*(\.\d*)?$/.test(raw);
-              if (!valid && raw !== '') return;
-              // strip leading zeros (preserve 0.xxx and -0.xxx)
+              if (!valid && raw !== "") return;
               let cleaned = raw;
-              cleaned = cleaned.replace(/^(\d)(?=\d)/, '$1');
+              cleaned = cleaned.replace(/^(\d)(?=\d)/, "$1");
               if (/^-?0+\d/.test(cleaned)) {
-                cleaned = cleaned.replace(/^(-?)0+(?=\d)/, '$1');
+                cleaned = cleaned.replace(/^(-?)0+(?=\d)/, "$1");
               }
-              setBalanceInput(prev => ({ ...prev, [selectedBalanceAccount]: cleaned }));
+              setBalanceInput((prev) => ({
+                ...prev,
+                [selectedBalanceAccount]: cleaned,
+              }));
             }}
             onBlur={() => {
-              const raw = balanceInput[selectedBalanceAccount] ?? '';
-              const num = raw === '' || raw === '-' || raw === '.' || raw === '-.' ? 0 : parseFloat(raw);
-              setAccountBalances(prev => ({ ...prev, [selectedBalanceAccount]: isNaN(num) ? 0 : num }));
-              setBalanceInput(prev => ({ ...prev, [selectedBalanceAccount]: String(isNaN(num) ? 0 : num) }));
+              const raw = balanceInput[selectedBalanceAccount] ?? "";
+              const num =
+                raw === "" || raw === "-" || raw === "." || raw === "-."
+                  ? 0
+                  : parseFloat(raw);
+              setAccountBalances((prev) => ({
+                ...prev,
+                [selectedBalanceAccount]: isNaN(num) ? 0 : num,
+              }));
+              setBalanceInput((prev) => ({
+                ...prev,
+                [selectedBalanceAccount]: String(isNaN(num) ? 0 : num),
+              }));
             }}
-            style={{ padding: '6px 10px', border: '1px solid #ced4da', borderRadius: 6, width: 140 }}
+            className="w-[140px] bg-slate-800 border-slate-600 text-slate-100"
           />
-          
-          {/* Debug info */}
+
+          {/* Debug section */}
           {isDebugVisible && (
-            <div style={{ fontSize: '12px', color: '#666', marginLeft: '20px' }}>
-            <div>Income in localStorage: {(() => {
-              try {
-                const income = JSON.parse(localStorage.getItem('bb_tx_income') || '[]');
-                return income.length > 0 ? `${income.length} transactions` : 'None';
-              } catch { return 'Error reading'; }
-            })()}</div>
-            <div>Current balances: {JSON.stringify(accountBalances)}</div>
-            <div>Raw income data: {(() => {
-              try {
-                const income = JSON.parse(localStorage.getItem('bb_tx_income') || '[]');
-                return JSON.stringify(income.slice(0, 3)); // Show first 3 transactions
-              } catch { return 'Error reading'; }
-            })()}</div>
-            <button 
-              onClick={() => {
-                try {
-                  const incomeTransactions = JSON.parse(localStorage.getItem('bb_tx_income') || '[]');
-                  console.log('Manual refresh - Income transactions found:', incomeTransactions);
-                  
-                  setAccountBalances(prevBalances => {
-                    const newBalances = { ...prevBalances };
-                    
-                    // Add income to the specified accounts
-                    incomeTransactions.forEach((income: any) => {
-                      if (income.account && income.amount) {
-                        const account = income.account;
-                        const amount = Number(income.amount) || 0;
-                        console.log(`Manual refresh - Adding ${amount} to ${account} account`);
-                        newBalances[account] = (newBalances[account] || 0) + amount;
-                      }
-                    });
-                    
-                    console.log('Manual refresh - Updated account balances:', newBalances);
-                    return newBalances;
-                  });
-                } catch (error) {
-                  console.error('Manual refresh - Error updating account balances from income:', error);
-                }
-              }}
-              style={{ 
-                fontSize: '10px', 
-                padding: '2px 6px', 
-                background: '#0ea5e9', 
-                color: '#fff', 
-                border: 'none', 
-                borderRadius: 4,
-                cursor: 'pointer',
-                marginTop: '4px'
-              }}
-            >
-              Refresh Balances
-            </button>
-            <button 
-              onClick={() => {
-                // Reset all account balances to 0
-                setAccountBalances({});
-                localStorage.removeItem('bb_account_balances');
-                console.log('Reset all account balances to 0');
-              }}
-              style={{ 
-                fontSize: '10px', 
-                padding: '2px 6px', 
-                background: '#dc2626', 
-                color: '#fff', 
-                border: 'none', 
-                borderRadius: 4,
-                cursor: 'pointer',
-                marginTop: '4px',
-                marginLeft: '4px'
-              }}
-            >
-              Reset Balances
-            </button>
-            <button 
-              onClick={() => {
-                // Force sync with other components
-                try { window.dispatchEvent(new CustomEvent('bb:account-balances-updated', { detail: accountBalances })); } catch {}
-                console.log('Forced sync with other components');
-              }}
-              style={{ 
-                fontSize: '10px', 
-                padding: '2px 6px', 
-                background: '#f59e0b', 
-                color: '#fff', 
-                border: 'none', 
-                borderRadius: 4,
-                cursor: 'pointer',
-                marginTop: '4px',
-                marginLeft: '4px'
-              }}
-            >
-              Force Sync
-            </button>
+            <div className="ml-6 text-xs text-slate-400 space-y-1">
+              <div>
+                Income in localStorage:{" "}
+                {(() => {
+                  try {
+                    const income = JSON.parse(
+                      localStorage.getItem("bb_tx_income") || "[]"
+                    );
+                    return income.length > 0
+                      ? `${income.length} transactions`
+                      : "None";
+                  } catch {
+                    return "Error reading";
+                  }
+                })()}
+              </div>
+              <div>Current balances: {JSON.stringify(accountBalances)}</div>
+              <div>
+                Raw income data:{" "}
+                {(() => {
+                  try {
+                    const income = JSON.parse(
+                      localStorage.getItem("bb_tx_income") || "[]"
+                    );
+                    return JSON.stringify(income.slice(0, 3));
+                  } catch {
+                    return "Error reading";
+                  }
+                })()}
+              </div>
+
+              <div className="flex gap-2 pt-1">
+                <Button
+                  size="sm"
+                  className="bg-sky-500 hover:bg-sky-600"
+                  onClick={() => {
+                    try {
+                      const incomeTransactions = JSON.parse(
+                        localStorage.getItem("bb_tx_income") || "[]"
+                      );
+                      setAccountBalances((prev) => {
+                        const newBalances = { ...prev };
+                        incomeTransactions.forEach((income: any) => {
+                          if (income.account && income.amount) {
+                            const account = income.account;
+                            const amount = Number(income.amount) || 0;
+                            newBalances[account] =
+                              (newBalances[account] || 0) + amount;
+                          }
+                        });
+                        return newBalances;
+                      });
+                    } catch (error) {
+                      console.error("Error updating account balances:", error);
+                    }
+                  }}
+                >
+                  Refresh Balances
+                </Button>
+                <Button
+                  size="sm"
+                  className="bg-red-600 hover:bg-red-700"
+                  onClick={() => {
+                    setAccountBalances({});
+                    localStorage.removeItem("bb_account_balances");
+                  }}
+                >
+                  Reset Balances
+                </Button>
+                <Button
+                  size="sm"
+                  className="bg-amber-500 hover:bg-amber-600"
+                  onClick={() => {
+                    try {
+                      window.dispatchEvent(
+                        new CustomEvent("bb:account-balances-updated", {
+                          detail: accountBalances,
+                        })
+                      );
+                    } catch {}
+                  }}
+                >
+                  Force Sync
+                </Button>
+              </div>
             </div>
           )}
         </div>
       )}
 
+      {/* Add new category / account */}
       {(showAddCategory || showAddAccount) && isExpanded && (
-        <div style={{ display: 'flex', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
+        <div className="flex flex-wrap gap-4">
           {showAddCategory && (
-            <div style={{ display: 'flex', gap: 8, alignItems: 'center', border: '1px solid #e5e7eb', borderRadius: 8, padding: 8 }}>
-              <span style={{ fontWeight: 600 }}>New category:</span>
-              <input type="text" value={newCategory} onChange={(e) => setNewCategory(e.target.value)} placeholder="Category name" style={{ padding: '6px 10px', border: '1px solid #ced4da', borderRadius: 6 }} onKeyDown={(e) => { if (e.key === 'Enter') addNewCategory(); if (e.key === 'Escape') setShowAddCategory(false); }} />
-              <button onClick={addNewCategory} style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #e5e7eb', background: '#0ea5e9', color: '#fff' }}>Add</button>
-              <button onClick={() => { setShowAddCategory(false); setPendingRowForCategory(null); }} style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #e5e7eb', background: '#fff', color: '#1f2937' }}>Cancel</button>
-              <button onClick={() => removeCategory(newCategory.trim())} disabled={!newCategory.trim() || rows.some(r => r.category === newCategory.trim()) || categories.length <= 1} style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #e5e7eb', background: '#dc2626', color: '#fff' }}>Remove</button>
-            </div>
+            <Card className="flex items-center gap-3 p-4 border border-slate-700">
+              <span className="font-semibold">New category:</span>
+              <Input
+                value={newCategory}
+                onChange={(e) => setNewCategory(e.target.value)}
+                placeholder="Category name"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") addNewCategory();
+                  if (e.key === "Escape") setShowAddCategory(false);
+                }}
+              />
+              <Button onClick={addNewCategory}>Add</Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowAddCategory(false);
+                  setPendingRowForCategory(null);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                disabled={
+                  !newCategory.trim() ||
+                  rows.some((r) => r.category === newCategory.trim()) ||
+                  categories.length <= 1
+                }
+                onClick={() => removeCategory(newCategory.trim())}
+              >
+                Remove
+              </Button>
+            </Card>
           )}
+
           {showAddAccount && (
-            <div style={{ display: 'flex', gap: 8, alignItems: 'center', border: '1px solid #e5e7eb', borderRadius: 8, padding: 8 }}>
-              <span style={{ fontWeight: 600 }}>New account:</span>
-              <input type="text" value={newAccount} onChange={(e) => setNewAccount(e.target.value)} placeholder="Account name" style={{ padding: '6px 10px', border: '1px solid #ced4da', borderRadius: 6 }} onKeyDown={(e) => { if (e.key === 'Enter') addNewAccount(); if (e.key === 'Escape') setShowAddAccount(false); }} />
-              <button onClick={addNewAccount} style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #e5e7eb', background: '#0ea5e9', color: '#fff' }}>Add</button>
-              <button onClick={() => { setShowAddAccount(false); setPendingRowForAccount(null); }} style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #e5e7eb', background: '#fff', color: '#1f2937' }}>Cancel</button>
-              <button onClick={() => removeAccount(newAccount.trim())} disabled={!newAccount.trim() || rows.some(r => r.account === newAccount.trim()) || accounts.length <= 1} style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #e5e7eb', background: '#dc2626', color: '#fff' }}>Remove</button>
-            </div>
+            <Card className="flex items-center gap-3 p-4 border border-slate-700">
+              <span className="font-semibold">New account:</span>
+              <Input
+                value={newAccount}
+                onChange={(e) => setNewAccount(e.target.value)}
+                placeholder="Account name"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") addNewAccount();
+                  if (e.key === "Escape") setShowAddAccount(false);
+                }}
+              />
+              <Button onClick={addNewAccount}>Add</Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowAddAccount(false);
+                  setPendingRowForAccount(null);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                disabled={
+                  !newAccount.trim() ||
+                  rows.some((r) => r.account === newAccount.trim()) ||
+                  accounts.length <= 1
+                }
+                onClick={() => removeAccount(newAccount.trim())}
+              >
+                Remove
+              </Button>
+            </Card>
           )}
         </div>
       )}
 
+      {/* Transactions */}
       {isExpanded && (
-        <div style={{ display: 'grid', gap: 8 }}>
+        <div className="space-y-3">
           {rows.length === 0 ? (
-            <div style={{ padding: '20px', textAlign: 'center', color: '#666' }}>
-              <div>No transactions yet.</div>
-              <button 
+            <div className="py-8 text-center text-slate-400">
+              <p>No transactions yet.</p>
+              <Button
+                className="mt-3 bg-sky-500 hover:bg-sky-600"
                 onClick={() => {
                   const newRow = {
                     id: `fx-${Date.now()}`,
-                    date: new Date().toISOString().split('T')[0],
-                    account: accounts[0] || 'Checking',
-                    category: categories[0] || 'Housing',
-                    payee: '',
+                    date: new Date().toISOString().split("T")[0],
+                    account: accounts[0] || "Checking",
+                    category: categories[0] || "Housing",
+                    payee: "",
                     amount: 0,
                   };
-                  console.log('Manually creating row:', newRow);
                   setRows([newRow]);
-                }}
-                style={{ 
-                  marginTop: '10px', 
-                  padding: '8px 16px', 
-                  background: '#0ea5e9', 
-                  color: '#fff', 
-                  border: 'none', 
-                  borderRadius: 6,
-                  cursor: 'pointer'
                 }}
               >
                 Create First Transaction
-              </button>
+              </Button>
             </div>
           ) : (
             rows.map((row, idx) => (
@@ -519,16 +582,23 @@ const FixedExpenses: React.FC = () => {
                 onChange={handleChange}
                 onAdd={handleAdd}
                 onRemove={handleRemove}
-                onNewCategoryRequested={(id) => { setPendingRowForCategory(id); setShowAddCategory(true); }}
-                onNewAccountRequested={(id) => { setPendingRowForAccount(id); setShowAddAccount(true); }}
+                onNewCategoryRequested={(id) => {
+                  setPendingRowForCategory(id);
+                  setShowAddCategory(true);
+                }}
+                onNewAccountRequested={(id) => {
+                  setPendingRowForAccount(id);
+                  setShowAddAccount(true);
+                }}
                 lineBalance={runningBalances[idx] ?? 0}
               />
             ))
           )}
         </div>
       )}
-    </div>
+    </Card>
   );
-};
+}
+
 
 export default FixedExpenses;
