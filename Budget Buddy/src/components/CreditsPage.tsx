@@ -70,7 +70,7 @@ export default function CreditsPage() {
             <Button
               variant="outline"
               size="default"
-              className="bg-slate-900/60 border-cyan-500/50 text-indigo-500 hover:bg-gray-100 hover:border-cyan-400 hover:text-cyan-200 transition-all duration-200 font-medium shadow-md hover:shadow-lg flex-shrink-0"
+              className="bg-slate-900/60 border-cyan-500/50 text-indigo-300 hover:bg-gray-100 hover:border-cyan-400 hover:text-cyan-200 transition-all duration-200 font-medium shadow-md hover:shadow-lg flex-shrink-0"
               onClick={() => window.history.back()}
             >
               ← Back

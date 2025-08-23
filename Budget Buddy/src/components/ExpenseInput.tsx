@@ -4,6 +4,10 @@ import CategoryManager from './expenses/CategoryManager';
 import AccountManager from './expenses/AccountManager';
 import ExpenseRow from './expenses/ExpenseRow';
 import { useLocalStorageList } from './expenses/useLocalStorageList';
+import { Card } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Separator } from "@/components/ui/separator"
 
 export interface ExpenseInputField {
   id: string;
@@ -200,53 +204,27 @@ const ExpenseInput: React.FC<ExpenseInputProps> = ({
   };
 
   return (
-    <div className="expense-input-container" style={{ padding: '20px', maxWidth }}>
-      <h2 
+    <Card className="expense-input-container p-6 max-w-4xl bg-slate-900 text-slate-100 shadow-lg rounded-xl space-y-6">
+      {/* Header */}
+      <div
         onClick={() => setIsExpanded(!isExpanded)}
-        style={{ 
-          marginBottom: '20px', 
-          color: '#1F2937',
-          borderBottom: `3px solid ${getExpenseTypeColor()}`,
-          padding: '15px 20px',
-          cursor: 'pointer',
-          userSelect: 'none',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          backgroundColor: '#F9FAFB',
-          borderRadius: '12px',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-          fontSize: '24px',
-          fontWeight: 700,
-          textTransform: 'uppercase',
-          letterSpacing: '0.05em',
-          border: `2px solid ${getExpenseTypeColor()}`,
-          transition: 'all 0.2s ease-in-out'
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.transform = 'translateY(-2px)';
-          e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.2)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.transform = 'translateY(0)';
-          e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
-        }}
+        className="flex items-center justify-between cursor-pointer select-none border-2 rounded-xl p-4 bg-slate-800 hover:shadow-xl transition-all duration-200"
+        style={{ borderColor: getExpenseTypeColor() }}
       >
-        <span>{title}</span>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-          <span style={{ 
-            fontSize: '16px', 
-            color: getExpenseTypeColor(),
-            fontWeight: '600'
-          }}>
+        <span className="text-2xl font-bold tracking-wide uppercase text-cyan-400">
+          {title}
+        </span>
+        <div className="flex items-center gap-6">
+          <span className="text-lg font-semibold text-cyan-400">
             ${totalExpenses.toFixed(2)}
           </span>
-          <span style={{ fontSize: '20px', fontWeight: 'bold' }}>
-            {isExpanded ? '−' : '+'}
+          <span className="text-2xl font-bold">
+            {isExpanded ? "−" : "+"}
           </span>
         </div>
-      </h2>
-      
+      </div>
+
+      {/* Category Manager */}
       {isExpanded && showCategoryManagement && (
         <CategoryManager
           categories={categories}
@@ -258,11 +236,15 @@ const ExpenseInput: React.FC<ExpenseInputProps> = ({
           setNewCategory={setNewCategory}
           addNewCategory={addNewCategory}
           removeCategory={removeCategory}
-          canRemove={(name) => !expenseFields.some(f => f.category === name) && categories.length > 1}
+          canRemove={(name) =>
+            !expenseFields.some((f) => f.category === name) &&
+            categories.length > 1
+          }
           getAccentColor={getExpenseTypeColor}
         />
       )}
 
+      {/* Account Manager */}
       {isExpanded && showCategoryManagement && (
         <AccountManager
           accounts={accounts}
@@ -274,60 +256,57 @@ const ExpenseInput: React.FC<ExpenseInputProps> = ({
           setNewAccount={setNewAccount}
           addNewAccount={addNewAccount}
           removeAccount={removeAccount}
-          canRemove={(name) => !expenseFields.some(f => f.account === name) && accounts.length > 1}
+          canRemove={(name) =>
+            !expenseFields.some((f) => f.account === name) &&
+            accounts.length > 1
+          }
           getAccentColor={getExpenseTypeColor}
         />
       )}
 
-      {/* Expense Input Fields - Only show if expanded */}
-      {isExpanded && expenseFields.map((field) => (
-        <ExpenseRow
-          key={field.id}
-          value={field}
-          categories={categories}
-          accounts={accounts}
-          onChange={updateExpenseField}
-          onAdd={addExpenseField}
-          onRemove={removeExpenseField}
-          setShowAddCategory={setShowAddCategory}
-          setPendingFieldIdForNewCategory={setPendingFieldIdForNewCategory}
-          setShowAddAccount={setShowAddAccount}
-          setPendingFieldIdForNewAccount={setPendingFieldIdForNewAccount}
-          getAccentColor={getExpenseTypeColor}
-        />
-      ))}
+      {/* Expense Input Fields */}
+      {isExpanded &&
+        expenseFields.map((field) => (
+          <ExpenseRow
+            key={field.id}
+            value={field}
+            categories={categories}
+            accounts={accounts}
+            onChange={updateExpenseField}
+            onAdd={addExpenseField}
+            onRemove={removeExpenseField}
+            setShowAddCategory={setShowAddCategory}
+            setPendingFieldIdForNewCategory={setPendingFieldIdForNewCategory}
+            setShowAddAccount={setShowAddAccount}
+            setPendingFieldIdForNewAccount={setPendingFieldIdForNewAccount}
+            getAccentColor={getExpenseTypeColor}
+          />
+        ))}
 
-      {/* Total Expenses Display - Only show if expanded */}
+      {/* Total Expenses Display */}
       {isExpanded && (
-        <div style={{ 
-          marginTop: '20px',
-          padding: '20px',
-          backgroundColor: getExpenseTypeBackground(),
-          borderRadius: '8px',
-          border: `2px solid ${getExpenseTypeColor()}`
-        }}>
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            alignItems: 'center',
-            fontSize: '18px',
-            fontWeight: '600'
-          }}>
-            <span>Total {expenseType === 'fixed' ? 'Fixed' : 'Discretionary'} Expenses:</span>
-            <span style={{ 
-              color: getExpenseTypeColor(),
-              fontSize: '24px',
-              fontWeight: '700'
-            }}>
+        <Card
+          className="p-4 rounded-lg"
+          style={{
+            backgroundColor: getExpenseTypeBackground(),
+            borderColor: getExpenseTypeColor(),
+            borderWidth: "2px",
+          }}
+        >
+          <div className="flex justify-between items-center text-lg font-semibold">
+            <span>
+              Total {expenseType === "fixed" ? "Fixed" : "Discretionary"} Expenses:
+            </span>
+            <span className="text-2xl font-bold text-cyan-400">
               ${totalExpenses.toFixed(2)}
-          </span>
-        </div>
-      </div>
+            </span>
+          </div>
+        </Card>
       )}
 
-      {/* Summary - Only show if expanded */}
+      {/* Summary */}
       {isExpanded && (
-        <div style={{ marginTop: '20px', fontSize: '14px', color: '#6c757d' }}>
+        <div className="text-sm text-slate-400 space-y-1">
           <p>• Use the + button to add new expense fields</p>
           <p>• Use the - button to remove expense fields (minimum 1 field)</p>
           {showCategoryManagement && (
@@ -337,10 +316,15 @@ const ExpenseInput: React.FC<ExpenseInputProps> = ({
             </>
           )}
           <p>• Total expenses are automatically calculated</p>
-          <p>• {expenseType === 'fixed' ? 'Fixed expenses are regular, recurring costs' : 'Discretionary expenses are optional, variable costs'}</p>
+          <p>
+            •{" "}
+            {expenseType === "fixed"
+              ? "Fixed expenses are regular, recurring costs"
+              : "Discretionary expenses are optional, variable costs"}
+          </p>
         </div>
       )}
-    </div>
+    </Card>
   );
 };
 
