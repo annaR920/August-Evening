@@ -5,9 +5,6 @@ import AccountManager from './expenses/AccountManager';
 import ExpenseRow from './expenses/ExpenseRow';
 import { useLocalStorageList } from './expenses/useLocalStorageList';
 import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Separator } from "@/components/ui/separator"
 
 export interface ExpenseInputField {
   id: string;
@@ -23,7 +20,6 @@ export interface ExpenseInputProps {
   expenseType: 'fixed' | 'discretionary';
   initialExpenses?: ExpenseInputField[];
   onExpensesChange?: (expenses: ExpenseInputField[]) => void;
-  maxWidth?: string;
   showCategoryManagement?: boolean;
 }
 
@@ -32,7 +28,6 @@ const ExpenseInput: React.FC<ExpenseInputProps> = ({
   expenseType,
   initialExpenses = [],
   onExpensesChange,
-  maxWidth = '800px',
   showCategoryManagement = true
 }) => {
   const storageKey = `bb_expense_rows_${expenseType}`;
