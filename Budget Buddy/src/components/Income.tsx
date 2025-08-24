@@ -195,10 +195,16 @@ const Income: React.FC = () => {
     <Card className="p-6 space-y-6 bg-slate-900 text-slate-100">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-teal-400">Source Income</h2>
+        <h2
+          className="text-2xl"
+          style={{ color: "rgb(0, 188, 212)", fontWeight: 600 }}
+        >
+          Source Income
+        </h2>
         <Button
           variant="outline"
-          className="border-teal-500 text-teal-300 hover:bg-teal-600 hover:text-purple-100"
+          className="border-teal-500 hover:bg-teal-600 hover:text-purple-100"
+          style={{ color: "rgb(0, 188, 212)", fontWeight: 600 }}
           onClick={() => setIsExpanded((v) => !v)}
         >
           {isExpanded ? "Hide" : "Show"} Income
@@ -335,7 +341,10 @@ const Income: React.FC = () => {
 
       {/* Total Income Display */}
       <div className="text-center">
-        <div className="text-2xl font-bold text-teal-400">
+        <div
+          className="text-2xl"
+          style={{ color: "rgb(0, 188, 212)", fontWeight: 600 }}
+        >
           Total Income: $
           {totalIncome.toLocaleString(undefined, { minimumFractionDigits: 2 })}
         </div>

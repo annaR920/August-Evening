@@ -55,7 +55,10 @@ export default function CreditsPage() {
       <div className="max-w-4xl w-full">
         {/* Header Section */}
         <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold tracking-tight text-cyan-400 mb-4">
+          <h1
+            className="text-5xl tracking-tight mb-4"
+            style={{ color: "rgb(0, 188, 212)", fontWeight: 600 }}
+          >
             BudgetBuddy
           </h1>
           <p className="text-xl text-slate-300 font-light">

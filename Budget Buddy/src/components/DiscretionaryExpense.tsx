@@ -410,14 +410,18 @@ const DiscretionaryExpense: React.FC = () => {
     <Card className="p-6 space-y-6 bg-slate-900 text-slate-100">
       {/* Header */}
       <div className="flex items-center justify-between mb-2">
-        <h2 className="m-0 text-xl font-bold text-teal-400">
+        <h2
+          className="m-0 text-xl"
+          style={{ color: "rgb(0, 188, 212)", fontWeight: 600 }}
+        >
           Discretionary Expenses
         </h2>
         <Button
           variant="outline"
           size="sm"
           onClick={() => setIsExpanded((v) => !v)}
-          className="border-teal-500 text-teal-300 hover:bg-teal-600 hover:text-purple-100"
+          className="border-teal-500 hover:bg-teal-600 hover:text-purple-100"
+          style={{ color: "rgb(0, 188, 212)", fontWeight: 600 }}
         >
           {isExpanded ? "Hide" : "Show"} Transactions
         </Button>

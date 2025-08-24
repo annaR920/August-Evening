@@ -135,7 +135,7 @@ function Dashboard() {
       ) : (
         <>
           <Header />
-          
+
           <MonthlyOverviewBar
             monthlyExpenseTotal={totalsByCategory.reduce(
               (sum, c) => sum + c.amount,
@@ -171,19 +171,23 @@ function Dashboard() {
         </>
       )}
       <div
-            style={{
-              padding: "20px",
-              textAlign: "center",
-              marginBottom: "20px",
-            }}
-          >
-            <Link
-              to="/credits"
-              style={{ color: "#00bcd4", textDecoration: "underline" }}
-            >
-              View Credits Page
-            </Link>
-          </div>
+        style={{
+          padding: "20px",
+          textAlign: "center",
+          marginBottom: "20px",
+        }}
+      >
+        <Link
+          to="/credits"
+          style={{
+            color: "rgb(0, 188, 212)",
+            fontWeight: 600,
+            textDecoration: "underline",
+          }}
+        >
+          View Credits Page
+        </Link>
+      </div>
       {/* Debug Toggle - always visible */}
       <DebugToggle />
     </div>
