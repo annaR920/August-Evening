@@ -11,21 +11,82 @@ type Developer = {
 };
 
 const developers: Developer[] = [
+ 
+  {
+    name: "Mindi Briese",
+    role: "Project Manager",
+    link: "https://github.com/mindibriese",
+    linkType: "github",
+  },
+
+  {
+    name: "Timothy Batchelder",
+    role: "Project Engineer",
+    link: "https://github.com/timbat",
+    linkType: "github",
+  },
+
+  {
+    name: "John Schlautman",
+    role: "Team Lead",
+    link: "https://github.com/schlajo",
+    linkType: "github",
+  },
+  
   {
     name: "Dorian Germain Zambo Zambo",
-    role: "Backend Engineer",
+    role: "UI/UX Designer and Developer",
     link: "https://github.com/nariod14",
     linkType: "github",
   },
+
   {
-    name: "Teammate One",
-    role: "Backend Engineer",
+    name: "Glenn Byers",
+    role: "Developer",
+    link: "https://github.com/glenbyers",
+    linkType: "github",
   },
+
   {
-    name: "Teammate Two",
+    name: "Michelle Evans",
     role: "UI/UX Designer",
     link: "https://twitter.com/someone",
     linkType: "twitter",
+  },
+
+  {
+    name: "Anna Rankin",
+    role: "UI/UX Designer",
+    link: "https://github.com/annarankin",
+    linkType: "github",
+  },
+ 
+  {
+    name: "Lisa Dean",
+    role: "Developer",
+    link: "https://github.com/lisadean",
+    linkType: "github",
+  },
+
+  {
+    name: "Eddy Nelson Rivera",
+    role: "Developer",
+    link: "https://github.com/eddynrivera",
+    linkType: "github",
+  },
+
+  {
+    name: "Jas Atanasievska",
+    role: "Developer",
+    link: "https://github.com/jasatanasievska",
+    linkType: "github",
+  },
+
+  {
+    name: "Kai Pannu",
+    role: "Developer",
+    link: "https://github.com/kai-pannu",
+    linkType: "github",
   },
 ];
 

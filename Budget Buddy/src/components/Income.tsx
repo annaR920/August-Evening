@@ -192,7 +192,12 @@ const Income: React.FC = () => {
   };
 
   return (
-    <Card className="p-6 space-y-6 bg-slate-900 text-slate-100">
+    <Card
+      className="p-6 space-y-6 bg-slate-900 text-slate-100"
+      style={{
+        boxShadow: "0 10px 25px #00bcd4, 0 4px 10px #00bcd4",
+      }}
+    >
       {/* Header */}
       <div className="flex items-center justify-between">
         <h2

@@ -1,61 +1,63 @@
 .monthly-overview-bar-container {
-	width: 100%;
-	max-width: 500px;
-	margin: 12px auto;
-	padding: 16px;
-	background: rgb(79, 70, 229);
-	border-radius: 16px;
-	box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  width: 100%;
+  padding: 24px;
+  background: rgb(15, 23, 42);
+  color: rgb(241, 245, 249);
+  border-radius: 8px;
+  border: 1px solid rgb(255, 255, 255);
+  box-shadow: 0 10px 25px #00bcd4, 0 4px 10px #00bcd4;
 }
 
 .monthly-overview-bar-labels {
-	display: flex;
-	justify-content: space-between;
-	font-size: 0.95rem;
-	margin-bottom: 8px;
-	color: #fff;
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.95rem;
+  margin-bottom: 8px;
+  color: #fff;
 }
 
 .monthly-overview-bar {
-	position: relative;
-	height: 24px;
-	background: #e0e0e0;
-	border-radius: 12px;
-	overflow: hidden;
+  position: relative;
+  height: 24px;
+  background: #e0e0e0;
+  border-radius: 12px;
+  overflow: hidden;
+  width: 100%;
+  min-width: 600px;
 }
 
 .monthly-overview-bar-fill {
-	position: absolute;
-	left: 0;
-	top: 0;
-	height: 100%;
-	background: linear-gradient(90deg, #4caf50 60%, #ff9800 100%);
-	border-radius: 12px 0 0 12px;
-	z-index: 1;
-	transition: width 0.4s cubic-bezier(.4,0,.2,1);
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  background: linear-gradient(90deg, #4caf50 60%, #ff9800 100%);
+  border-radius: 12px 0 0 12px;
+  z-index: 1;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .monthly-overview-bar-slider {
-	position: absolute;
-	top: 50%;
-	transform: translateY(-50%);
-	z-index: 2;
-	transition: left 0.4s cubic-bezier(.4,0,.2,1);
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .monthly-overview-bar-knob {
-	width: 24px;
-	height: 24px;
-	background: #2196f3;
-	border-radius: 50%;
-	border: 3px solid #fff;
-	box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+  width: 24px;
+  height: 24px;
+  background: #2196f3;
+  border-radius: 50%;
+  border: 3px solid #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
 }
 
 .monthly-overview-bar-info {
-	display: flex;
-	justify-content: space-between;
-	margin-top: 10px;
-	font-size: 1rem;
-	color: #fff;
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  font-size: 1rem;
+  color: #fff;
 }

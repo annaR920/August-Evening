@@ -11,6 +11,7 @@ import Income from "./components/Income";
 import type { ExpenseCategory, CategoryTotal } from "./types";
 import UserProfile from "./components/UserProfile";
 import React from "react";
+import { Card } from "@/components/ui/card";
 
 import type { Transaction } from "./components/transactions/TransactionRow";
 import CreditsPage from "./components/CreditsPage";
@@ -101,7 +102,7 @@ function Dashboard() {
               cursor: "pointer",
               borderRadius: "50%",
               background: "#fff",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.07)",
+              boxShadow: "0 10px 25px #00bcd4, 0 4px 10px #00bcd4",
               objectFit: "cover",
             }}
             onClick={() => setRoute("profile")}
@@ -134,24 +135,57 @@ function Dashboard() {
         />
       ) : (
         <>
-          <Header />
+          <div
+            style={{ padding: "16px", maxWidth: "1400px", margin: "0 auto" }}
+          >
+            <Card
+              className="p-6 space-y-6 bg-slate-900 text-slate-100"
+              style={{
+                boxShadow: "0 10px 25px #00bcd4, 0 4px 10px #00bcd4",
+              }}
+            >
+              <Header />
+            </Card>
+          </div>
 
-          <MonthlyOverviewBar
-            monthlyExpenseTotal={totalsByCategory.reduce(
-              (sum, c) => sum + c.amount,
-              0
-            )}
-            monthlyIncomeTotal={totalIncome}
-          />
-          <div style={{ padding: 16 }}>
-            <SpendingByCategoryPie
-              data={totalsByCategory}
-              title="Spending by Category"
-              denominatorTotal={totalIncome}
-              centerValue={
-                totalIncome - totalsByCategory.reduce((s, c) => s + c.amount, 0)
-              }
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr",
+              gap: "20px",
+              padding: "16px",
+              maxWidth: "1400px",
+              margin: "0 auto",
+            }}
+          >
+            <MonthlyOverviewBar
+              monthlyExpenseTotal={totalsByCategory.reduce(
+                (sum, c) => sum + c.amount,
+                0
+              )}
+              monthlyIncomeTotal={totalIncome}
             />
+          </div>
+
+          <div
+            style={{ padding: "16px", maxWidth: "1400px", margin: "0 auto" }}
+          >
+            <Card
+              className="p-6 space-y-6 bg-slate-900 text-slate-100"
+              style={{
+                boxShadow: "0 10px 25px #00bcd4, 0 4px 10px #00bcd4",
+              }}
+            >
+              <SpendingByCategoryPie
+                data={totalsByCategory}
+                title="Spending by Category"
+                denominatorTotal={totalIncome}
+                centerValue={
+                  totalIncome -
+                  totalsByCategory.reduce((s, c) => s + c.amount, 0)
+                }
+              />
+            </Card>
           </div>
           <div
             style={{
