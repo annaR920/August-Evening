@@ -20,23 +20,36 @@ const developers: Developer[] = [
   },
 
   {
-    name: "Timothy Batchelder",
-    role: "Project Engineer",
-    link: "https://github.com/timbat",
-    linkType: "github",
-  },
-
-  {
     name: "John Schlautman",
-    role: "Team Lead",
+    role: "Tech Lead",
     link: "https://github.com/schlajo",
     linkType: "github",
   },
   
   {
+    name: "Timothy Batchelder",
+    role: "Project Engineer",
+    link: "https://github.com/timbat",
+    linkType: "github",
+  },
+  {
     name: "Dorian Germain Zambo Zambo",
     role: "UI/UX Designer and Developer",
     link: "https://github.com/nariod14",
+    linkType: "github",
+  },
+
+  {
+    name: "Michelle Evans",
+    role: "UI/UX Designer",
+    link: "https://github.com/michelleevans",
+    linkType: "github",
+  },
+
+  {
+    name: "Anna Rankin",
+    role: "UI/UX Designer",
+    link: "https://github.com/annarankin",
     linkType: "github",
   },
 
@@ -47,20 +60,6 @@ const developers: Developer[] = [
     linkType: "github",
   },
 
-  {
-    name: "Michelle Evans",
-    role: "UI/UX Designer",
-    link: "https://twitter.com/someone",
-    linkType: "twitter",
-  },
-
-  {
-    name: "Anna Rankin",
-    role: "UI/UX Designer",
-    link: "https://github.com/annarankin",
-    linkType: "github",
-  },
- 
   {
     name: "Lisa Dean",
     role: "Developer",
