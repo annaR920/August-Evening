@@ -5,13 +5,14 @@ const Header: React.FC = () => {
     <header
       style={{
         textAlign: "center",
-        marginBottom: "24px",
-        padding: "24px 0",
+        marginBottom: "15px",
+        marginTop: "0",
+        padding: "0, 0",
       }}
     >
       <h1
         style={{
-          margin: "0px",
+          margin: "0",
           fontSize: "4.0em",
           fontWeight: 700,
           color: "#00bcd4",

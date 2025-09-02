@@ -419,19 +419,22 @@ const FixedExpenses: React.FC = () => {
 
       {/* Account Balance editor */}
       {accounts.length > 0 && (
-        <div className="flex flex-wrap items-center gap-4">
-          <span className="font-semibold">Account Balance:</span>
+        <div className="flex flex-wrap items-center gap-3 mb-3">
+          <strong className="text-slate-200">Account Balance:</strong>
 
           <Select
             value={selectedBalanceAccount || ""}
             onValueChange={(val) => setSelectedBalanceAccount(val)}
           >
-            <SelectTrigger className="w-[180px] bg-slate-800 border-slate-600 text-slate-100">
+            <SelectTrigger
+              className="w-48 bg-slate-800 border-slate-600 text-slate-500 border border-solid"
+              style={{ color: "#f1f5f9 !important" }}
+            >
               <SelectValue placeholder="Select account" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-slate-900 border-slate-700">
               {accounts.map((a) => (
-                <SelectItem key={a} value={a}>
+                <SelectItem key={a} value={a} className="text-slate-100">
                   {a}
                 </SelectItem>
               ))}

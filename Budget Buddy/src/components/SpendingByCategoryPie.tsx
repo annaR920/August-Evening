@@ -45,8 +45,23 @@ const SpendingByCategoryPie: React.FC<SpendingByCategoryPieProps> = ({
   let cumulativeFraction = 0; // cumulative fraction (0..1)
 
   return (
-    <div style={{ display: "flex", gap: 24, alignItems: "center", flexWrap: "wrap" }}>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ overflow: 'visible' }}>
+    <div
+      style={{
+        display: "flex",
+        gap: 24,
+        alignItems: "center",
+        flexWrap: "wrap",
+        width: "100%",
+        minWidth: "600px",
+        justifyContent: "space-between",
+      }}
+    >
+      <svg
+        width={size}
+        height={size}
+        viewBox={`0 0 ${size} ${size}`}
+        style={{ overflow: "visible" }}
+      >
         <g transform={`translate(${size / 2}, ${size / 2}) rotate(-90)`}>
           {/* background track */}
           <circle
@@ -91,7 +106,7 @@ const SpendingByCategoryPie: React.FC<SpendingByCategoryPieProps> = ({
                     textAnchor="middle"
                     dominantBaseline="middle"
                     fill="#00bcd4"
-                    style={{ pointerEvents: 'none' }}
+                    style={{ pointerEvents: "none" }}
                   >
                     {String(slice.category)} {percent}
                   </text>
@@ -112,42 +127,62 @@ const SpendingByCategoryPie: React.FC<SpendingByCategoryPieProps> = ({
           dominantBaseline="middle"
           fontSize={18}
           fontWeight="bold"
-          fill={typeof centerValue === 'number' && centerValue < 0 ? '#DC2626' : '#00bcd4'}
+          fill={
+            typeof centerValue === "number" && centerValue < 0
+              ? "#DC2626"
+              : "#00bcd4"
+          }
         >
-          {typeof centerValue === 'number'
+          {typeof centerValue === "number"
             ? `$${centerValue.toFixed(0)}`
             : total > 0
-              ? `$${total.toFixed(0)}`
-              : 'No Data'}
+            ? `$${total.toFixed(0)}`
+            : "No Data"}
         </text>
       </svg>
-      <div style={{ display: "flex", flexDirection: "column", gap: 8, minWidth: 200 }}>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 8,
+          minWidth: 200,
+        }}
+      >
         {title ? (
-          <div style={{ 
-            fontWeight: 700, 
-            marginBottom: 12, 
-            fontSize: '18px',
-            color: '#1F2937',
-            textTransform: 'uppercase',
-            letterSpacing: '0.05em',
-            padding: '8px 16px',
-            backgroundColor: '#F3F4F6',
-            borderRadius: '8px',
-            border: '2px solid #E5E7EB',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-            textAlign: 'center'
-          }}>
+          <div
+            style={{
+              fontWeight: 700,
+              marginBottom: 12,
+              fontSize: "18px",
+              color: "#1F2937",
+              textTransform: "uppercase",
+              letterSpacing: "0.05em",
+              padding: "8px 16px",
+              backgroundColor: "#F3F4F6",
+              borderRadius: "8px",
+              border: "2px solid #E5E7EB",
+              boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+              textAlign: "center",
+            }}
+          >
             {title}
           </div>
         ) : null}
         {data.map((item, index) => {
-          const denominator = typeof denominatorTotal === "number" && denominatorTotal > 0 ? denominatorTotal : total;
-          const percent = denominator > 0 ? (item.amount / denominator) * 100 : 0;
+          const denominator =
+            typeof denominatorTotal === "number" && denominatorTotal > 0
+              ? denominatorTotal
+              : total;
+          const percent =
+            denominator > 0 ? (item.amount / denominator) * 100 : 0;
           const raw = (item as any)?.category;
-          let categoryLabel = typeof raw === 'string' ? raw.trim() : '';
-          if (!categoryLabel) categoryLabel = 'Other';
+          let categoryLabel = typeof raw === "string" ? raw.trim() : "";
+          if (!categoryLabel) categoryLabel = "Other";
           return (
-            <div key={categoryLabel + index} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div
+              key={categoryLabel + index}
+              style={{ display: "flex", alignItems: "center", gap: 8 }}
+            >
               <span
                 style={{
                   display: "inline-block",
@@ -157,8 +192,12 @@ const SpendingByCategoryPie: React.FC<SpendingByCategoryPieProps> = ({
                   background: colorForIndex(index),
                 }}
               />
-              <span style={{ color: '#00bcd4', fontWeight: 600 }}>{categoryLabel}</span>
-              <span style={{ color: "#00bcd4", fontWeight: 600 }}>{percent.toFixed(1)}%</span>
+              <span style={{ color: "#00bcd4", fontWeight: 600 }}>
+                {categoryLabel}
+              </span>
+              <span style={{ color: "#00bcd4", fontWeight: 600 }}>
+                {percent.toFixed(1)}%
+              </span>
             </div>
           );
         })}

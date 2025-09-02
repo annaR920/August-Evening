@@ -441,7 +441,10 @@ const DiscretionaryExpense: React.FC = () => {
             value={selectedBalanceAccount || ""}
             onValueChange={(val) => setSelectedBalanceAccount(val)}
           >
-            <SelectTrigger className="w-48 bg-slate-800 border-slate-600 text-slate-100">
+            <SelectTrigger
+              className="w-48 bg-slate-800 border-slate-600 text-slate-500"
+              style={{ color: "#f1f5f9 !important" }}
+            >
               <SelectValue placeholder="Select account" />
             </SelectTrigger>
             <SelectContent className="bg-slate-900 border-slate-700">
