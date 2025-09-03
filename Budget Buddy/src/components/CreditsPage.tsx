@@ -87,6 +87,13 @@ const developers: Developer[] = [
     link: "https://github.com/kai-pannu",
     linkType: "github",
   },
+
+{
+  name: "Katrina Wright",
+  role: "Producer",
+  link: "https://github.com/katrina-wright",
+  linkType: "github",
+},
 ];
 
 export default function CreditsPage() {
