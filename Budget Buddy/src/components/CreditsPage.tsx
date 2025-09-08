@@ -32,6 +32,14 @@ const developers: Developer[] = [
     link: "https://github.com/timbat",
     linkType: "github",
   },
+  
+  {
+    name: "Anna Rankin",
+    role: "Developer and UI/UX Designer",
+    link: "https://github.com/annaR920",
+    linkType: "github",
+  },
+
   {
     name: "Dorian Germain Zambo Zambo",
     role: "UI/UX Designer and Developer",
@@ -43,13 +51,6 @@ const developers: Developer[] = [
     name: "Michelle Evans",
     role: "UI/UX Designer",
     link: "https://github.com/michelleevans",
-    linkType: "github",
-  },
-
-  {
-    name: "Anna Rankin",
-    role: "UI/UX Designer",
-    link: "https://github.com/annarankin",
     linkType: "github",
   },
 
